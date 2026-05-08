@@ -9,65 +9,87 @@ interface QRCodeDisplayProps {
 }
 
 export default function QRCodeDisplay({ url, slug }: QRCodeDisplayProps) {
-  const [copied, setCopied] = useState(false)
+  const [downloaded, setDownloaded] = useState(false)
   const qrRef = useRef<HTMLDivElement>(null)
 
   const downloadQR = () => {
     const svg = qrRef.current?.querySelector('svg')
     if (!svg) return
+
+    const SIZE = 400
+    const PADDING = 32
     const svgData = new XMLSerializer().serializeToString(svg)
     const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+    canvas.width = SIZE + PADDING * 2
+    canvas.height = SIZE + PADDING * 2
+    const ctx = canvas.getContext('2d')!
     const img = new Image()
+
     img.onload = () => {
-      canvas.width = 200
-      canvas.height = 200
-      ctx?.drawImage(img, 0, 0)
+      // White background with padding
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, PADDING, PADDING, SIZE, SIZE)
       const link = document.createElement('a')
       link.download = `${slug}-qr.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
+      setDownloaded(true)
+      setTimeout(() => setDownloaded(false), 2000)
     }
-    img.src = `data:image/svg+xml;base64,${btoa(svgData)}`
-  }
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(url)
-    } catch {
-      const ta = document.createElement('textarea')
-      ta.value = url
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-    }
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    // Use encodeURIComponent to handle unicode in SVG
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`
   }
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-6 bg-white rounded-2xl shadow-lg">
-      <p className="text-sm text-slate-500 font-medium">Escanea para ver tu tarjeta</p>
-      <div ref={qrRef}>
-        <QRCodeSVG value={url} size={200} bgColor="#ffffff" fgColor="#000000" level="L" />
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 flex flex-col items-center gap-4">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        Código QR
+      </p>
+
+      {/* QR con fondo blanco visible */}
+      <div
+        ref={qrRef}
+        className="bg-white rounded-2xl p-4 shadow-lg"
+      >
+        <QRCodeSVG
+          value={url}
+          size={180}
+          bgColor="#ffffff"
+          fgColor="#0f172a"
+          level="M"
+        />
       </div>
-      <div className="flex gap-3 w-full max-w-xs">
-        <button
-          onClick={downloadQR}
-          className="flex-1 py-2 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors text-sm"
-        >
-          Descargar QR
-        </button>
-        <button
-          onClick={copyLink}
-          className={`flex-1 py-2 px-4 font-medium rounded-lg transition-colors text-sm ${
-            copied ? 'bg-green-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-          }`}
-        >
-          {copied ? '¡Copiado!' : 'Copiar enlace'}
-        </button>
-      </div>
+
+      {/* URL legible */}
+      <p className="text-xs text-slate-500 break-all text-center max-w-[240px]">{url}</p>
+
+      {/* Botón descargar */}
+      <button
+        onClick={downloadQR}
+        className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium text-sm transition-all ${
+          downloaded
+            ? 'bg-emerald-500 text-white'
+            : 'bg-slate-700 hover:bg-slate-600 text-white'
+        }`}
+      >
+        {downloaded ? (
+          <>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            ¡Descargado!
+          </>
+        ) : (
+          <>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Descargar QR
+          </>
+        )}
+      </button>
     </div>
   )
 }

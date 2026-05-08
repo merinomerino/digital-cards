@@ -117,32 +117,43 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
-  const labelClass = 'block text-sm font-medium text-slate-700 mb-1'
+  const inputClass = 'w-full px-3 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white'
+  const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5'
+
+  const appDomain =
+    (process.env.NEXT_PUBLIC_APP_URL || 'https://cardlink.mx')
+      .replace(/^https?:\/\//, '')
+      .replace(/\/$/, '') + '/'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl mx-auto">
       {!isEditing && (
         <div>
           <label className={labelClass}>URL de tu tarjeta</label>
-          <div className="relative flex items-center">
-            <span className="absolute left-3 text-slate-400 text-sm pointer-events-none">cardlink.app/</span>
+          <div className={`flex items-center border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent ${
+            slugAvailable === false ? 'border-red-400 focus-within:ring-red-400' :
+            slugAvailable === true  ? 'border-green-400 focus-within:ring-green-400' :
+            'border-slate-200'
+          }`}>
+            <span className="px-3 py-3 bg-slate-50 text-slate-400 text-sm border-r border-slate-200 whitespace-nowrap select-none flex-shrink-0">
+              {appDomain}
+            </span>
             <input
               type="text"
               name="slug"
               value={formData.slug}
               onChange={handleChange}
-              className={`${inputClass} pl-[7.5rem] pr-10 ${slugAvailable === false ? 'border-red-400 focus:ring-red-400' : slugAvailable === true ? 'border-green-400 focus:ring-green-400' : ''}`}
+              className="flex-1 px-3 py-3 text-sm outline-none bg-white min-w-0"
               placeholder="juan-perez"
             />
-            <div className="absolute right-3">
+            <div className="pr-3">
               {slugChecking && <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />}
               {!slugChecking && slugAvailable === true && <span className="text-green-500 text-lg">✓</span>}
               {!slugChecking && slugAvailable === false && <span className="text-red-500 text-lg">✗</span>}
             </div>
           </div>
-          {slugAvailable === false && <p className="mt-1 text-xs text-red-500">Este slug ya está en uso</p>}
-          {slugAvailable === true && <p className="mt-1 text-xs text-green-600">¡Disponible!</p>}
+          {slugAvailable === false && <p className="mt-1.5 text-xs text-red-500">Este slug ya está en uso</p>}
+          {slugAvailable === true && <p className="mt-1.5 text-xs text-green-600">¡Disponible!</p>}
         </div>
       )}
 
@@ -194,11 +205,13 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
           onChange={handleChange}
           maxLength={4}
           pattern="[0-9]{4}"
+          inputMode="numeric"
+          autoComplete="new-password"
           required
-          className={`${inputClass} max-w-[120px] text-center text-lg tracking-widest`}
-          placeholder="••••"
+          className={`${inputClass} max-w-[140px] text-center text-xl tracking-[0.5em] font-bold`}
+          placeholder="····"
         />
-        <p className="mt-1 text-xs text-slate-500">Lo necesitarás para editar tu tarjeta</p>
+        <p className="mt-1.5 text-xs text-slate-500">Lo necesitarás para editar tu tarjeta</p>
       </div>
 
       <div>

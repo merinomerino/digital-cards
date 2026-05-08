@@ -140,12 +140,11 @@ export default function PhotoUpload({ slug, currentUrl, onChange, disabled }: Ph
         JPG, PNG o HEIC · Máx {MAX_SIZE_MB} MB
       </p>
 
-      {/* Input oculto — capture permite cámara en móvil */}
+      {/* Input oculto — sin capture para permitir galería Y cámara */}
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPT}
-        capture="environment"
         className="hidden"
         onChange={handleChange}
       />
