@@ -196,23 +196,25 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
         </div>
       </div>
 
-      <div>
-        <label className={labelClass}>PIN de seguridad (4 dígitos) *</label>
-        <input
-          type="password"
-          name="pin"
-          value={formData.pin}
-          onChange={handleChange}
-          maxLength={4}
-          pattern="[0-9]{4}"
-          inputMode="numeric"
-          autoComplete="new-password"
-          required
-          className={`${inputClass} max-w-[140px] text-center text-xl tracking-[0.5em] font-bold`}
-          placeholder="····"
-        />
-        <p className="mt-1.5 text-xs text-slate-500">Lo necesitarás para editar tu tarjeta</p>
-      </div>
+      {!isEditing && (
+        <div>
+          <label className={labelClass}>PIN de seguridad (4 dígitos) *</label>
+          <input
+            type="password"
+            name="pin"
+            value={formData.pin}
+            onChange={handleChange}
+            maxLength={4}
+            pattern="[0-9]{4}"
+            inputMode="numeric"
+            autoComplete="new-password"
+            required
+            className={`${inputClass} max-w-[140px] text-center text-xl tracking-[0.5em] font-bold`}
+            placeholder="····"
+          />
+          <p className="mt-1.5 text-xs text-slate-500">Lo necesitarás para editar tu tarjeta</p>
+        </div>
+      )}
 
       <div>
         <label className={labelClass}>Redes sociales</label>
