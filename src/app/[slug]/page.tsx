@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getCardBySlug } from '@/lib/firestore'
+import { getCardBySlug, FirestoreUnavailableError } from '@/lib/firestore'
 import CardPreview from '@/components/CardPreview'
 import QRCodeDisplay from '@/components/QRCodeDisplay'
 import AdBanner from '@/components/AdBanner'
@@ -34,7 +34,45 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CardPage({ params }: Props) {
   const { slug } = await params
-  const card = await getCardBySlug(slug)
+
+  let card = null
+  let dbError = false
+
+  try {
+    card = await getCardBySlug(slug)
+  } catch (err) {
+    if (err instanceof FirestoreUnavailableError) {
+      dbError = true
+    } else {
+      throw err
+    }
+  }
+
+  if (dbError) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+        <div className="max-w-sm w-full text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto">
+            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-white">Servicio no disponible</h1>
+          <p className="text-slate-400 text-sm">
+            No se pudo conectar a la base de datos. Intenta de nuevo en unos momentos.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm"
+          >
+            ← Volver al inicio
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   if (!card) notFound()
 
   const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cardlink.mx'}/${slug}`

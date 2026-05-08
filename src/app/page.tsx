@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
 import CardForm, { CardFormData } from '@/components/CardForm'
 import { hashPin } from '@/lib/utils'
-import { createCard } from '@/lib/firestore'
+import { createCard, FirestoreUnavailableError } from '@/lib/firestore'
 
 const FEATURES = [
   { icon: '⚡', title: 'En segundos', desc: 'Crea tu tarjeta sin registro ni contraseñas.' },
@@ -35,8 +35,12 @@ export default function HomePage() {
       })
       toast.success('¡Tarjeta creada exitosamente!')
       router.push(`/${data.slug}`)
-    } catch {
-      toast.error('Error al crear la tarjeta. Intenta de nuevo.')
+    } catch (err) {
+      if (err instanceof FirestoreUnavailableError) {
+        toast.error('No se pudo conectar al servidor. Verifica tu conexión a internet e intenta de nuevo.', { duration: 5000 })
+      } else {
+        toast.error('Error al crear la tarjeta. Intenta de nuevo.')
+      }
     }
   }
 
