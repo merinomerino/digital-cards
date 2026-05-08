@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/types/card'
 import { toSlug, getSocialIcon } from '@/lib/utils'
 import { slugExists } from '@/lib/firestore'
+import PhotoUpload from '@/components/PhotoUpload'
 
 export type CardFormData = {
   slug: string
@@ -64,7 +65,6 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
   const [slugChecking, setSlugChecking] = useState(false)
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
-  const [previewError, setPreviewError] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -174,27 +174,15 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
       </div>
 
       <div>
-        <label className={labelClass}>Foto de perfil (URL de imagen)</label>
-        <input
-          type="text"
-          name="fotoUrl"
-          value={formData.fotoUrl}
-          onChange={(e) => { handleChange(e); setPreviewError(false) }}
-          className={inputClass}
-          placeholder="https://ejemplo.com/mi-foto.jpg"
-        />
-        {formData.fotoUrl && !previewError && (
-          <div className="mt-2 flex items-center gap-3">
-            <img
-              src={formData.fotoUrl}
-              alt="Preview"
-              className="w-16 h-16 object-cover rounded-full border-2 border-indigo-200"
-              onError={() => setPreviewError(true)}
-            />
-            <span className="text-xs text-green-600">Vista previa correcta ✓</span>
-          </div>
-        )}
-        {previewError && <p className="mt-1 text-xs text-red-500">No se puede cargar esta imagen</p>}
+        <label className={labelClass}>Foto de perfil</label>
+        <div className="mt-2">
+          <PhotoUpload
+            slug={formData.slug || 'temp-upload'}
+            currentUrl={formData.fotoUrl}
+            onChange={(url) => setFormData(prev => ({ ...prev, fotoUrl: url }))}
+            disabled={loading}
+          />
+        </div>
       </div>
 
       <div>

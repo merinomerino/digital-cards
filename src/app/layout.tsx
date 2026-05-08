@@ -1,7 +1,8 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import Footer from '@/components/Footer'
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -41,6 +42,15 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#0f172a',
+  viewportFit: 'cover',
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID
 
@@ -58,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <ServiceWorkerRegistrar />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
