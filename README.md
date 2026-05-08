@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CardLink — Tarjetas de Presentación Digitales
 
-## Getting Started
+App Next.js 15 para crear y compartir tarjetas de presentación digitales con QR.
 
-First, run the development server:
+## Stack
+- **Next.js 15** (App Router, TypeScript)
+- **Tailwind CSS**
+- **Firebase Firestore** — almacenamiento de tarjetas
+- **qrcode.react** — generación de QR
+- **react-hot-toast** — notificaciones
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Estructura
+```
+src/app/            → páginas (home, [slug], [slug]/edit, api)
+src/components/     → CardPreview, CardForm, QRCodeDisplay, PinModal
+src/lib/            → firebase.ts, firestore.ts, utils.ts
+src/types/          → card.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Clonar e instalar
+```bash
+git clone https://github.com/tu-usuario/digital-cards.git
+cd digital-cards
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Variables de entorno
+```bash
+cp .env.example .env.local
+```
+Edita `.env.local` con tus credenciales de Firebase.
 
-## Learn More
+### 3. Firebase
+1. Crea proyecto en [console.firebase.google.com](https://console.firebase.google.com)
+2. Activa **Firestore** en modo producción
+3. Aplica las reglas de seguridad:
+   ```bash
+   npx firebase deploy --only firestore:rules
+   ```
+4. Copia las credenciales de tu web app a `.env.local`
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Correr en desarrollo
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy en Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Sube el repo a GitHub
+2. Conecta en [vercel.com](https://vercel.com) → Import Project
+3. Agrega las variables de entorno en Vercel → Settings → Environment Variables
+4. Vercel detecta Next.js automáticamente — deploy listo
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Seguridad
+- PINs almacenados como hash SHA-256 (nunca en texto plano)
+- Reglas Firestore: slug y pinHash son inmutables una vez creados
+- API Route verifica PIN antes de cualquier update
+- `.env.local` excluido del repositorio
