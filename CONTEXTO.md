@@ -48,6 +48,85 @@
 
 ---
 
+## 3.1 Diagrama de Flujo Completo
+
+```mermaid
+flowchart TD
+    %% ─── ACTORES ───────────────────────────────────────────────────────────
+    subgraph CREADOR ["👤 Creador (usuario normal)"]
+        A([Llega a cardlink.mx]) --> B[Llena formulario público\nnombre · empresa · teléfono\nredes · foto · slug · PIN]
+        B --> C{¿Slug disponible?}
+        C -- ❌ Ocupado --> D[Sistema sugiere\nslug alternativo]
+        D --> B
+        C -- ✅ Libre --> E{¿Foto > 5MB?}
+        E -- ❌ Sí --> F[Error: reducir imagen\nantes de subir]
+        F --> B
+        E -- ✅ No --> G[Sube foto a\nFirebase Storage]
+        G --> H[Crea documento\nen Firestore]
+        H --> I[/Tarjeta publicada\nen cardlink.mx/slug/]
+        I --> J[Recibe:\n🔗 URL compartible\n📱 QR descargable\n💬 Botón WhatsApp]
+    end
+
+    subgraph EDICION ["✏️ Edición posterior (mismo creador)"]
+        K([Va a /slug/edit]) --> L[Ingresa PIN]
+        L --> M{¿PIN correcto?}
+        M -- ❌ 3 intentos --> N[🔒 Bloqueado\nmensaje amigable]
+        M -- ✅ Correcto --> O[Editor habilitado]
+        O --> P[Modifica datos\nactualiza en Firestore]
+        P --> I
+    end
+
+    subgraph VISITANTE ["👁️ Visitante (receptor del QR)"]
+        Q([Escanea QR\no recibe link]) --> R{¿Tarjeta existe?}
+        R -- ❌ No --> S[Página 404\nCTA: crea tu tarjeta]
+        R -- ✅ Sí --> T{¿Tiene campo\n'diseño'?}
+        T -- ❌ No → clásica --> U[CardPreview\ntarjeta estándar gratuita]
+        T -- ✅ Sí → premium --> V[DesignCardPreview\ntattoo · vet · travel]
+        U --> W[Interacciones disponibles:\n📞 Llamar\n💬 WhatsApp\n🌐 Redes sociales\n📧 Email]
+        V --> W
+        W --> X[(Analytics:\nregistra clicks\nen Firestore)]
+    end
+
+    subgraph ADMIN ["🛡️ Administrador MTS (/admin)"]
+        Y([Login admin\ncontraseña SHA-256]) --> Z{¿Auth válida?}
+        Z -- ❌ --> Y
+        Z -- ✅ --> AA[Panel de administración]
+        AA --> AB[Gestionar tarjetas\ncreadas · editadas · eliminadas]
+        AA --> AC[Crear tarjeta premium\npara cliente con diseño]
+        AC --> AD[Selecciona plantilla\ntattoo · vet · travel]
+        AD --> H
+        AA --> AE[Ver analytics\nvistas · clicks · conversiones]
+        AA --> AF[Gestionar usuarios\ny configuración]
+    end
+
+    %% ─── INFRAESTRUCTURA ────────────────────────────────────────────────────
+    subgraph INFRA ["☁️ Infraestructura"]
+        H --- FS[(Firebase\nFirestore)]
+        G --- ST[(Firebase\nStorage)]
+        X --- FS
+        AE --- FS
+    end
+
+    %% ─── CONEXIONES ENTRE ACTORES ───────────────────────────────────────────
+    J -.->|comparte QR o link| Q
+    I -.->|URL pública accesible| R
+
+    %% ─── ESTILOS ────────────────────────────────────────────────────────────
+    classDef success fill:#10B981,color:#fff,stroke:none
+    classDef error fill:#EF4444,color:#fff,stroke:none
+    classDef neutral fill:#6366F1,color:#fff,stroke:none
+    classDef infra fill:#1e1e2e,color:#94a3b8,stroke:#6366F1
+    classDef endpoint fill:#0A0A0F,color:#F1F5F9,stroke:#6366F1,stroke-width:2px
+
+    class I,J success
+    class N,S,F error
+    class AA,O neutral
+    class FS,ST infra
+    class A,K,Q,Y endpoint
+```
+
+---
+
 ## 4. Flujos Alternos
 
 | Situación | Comportamiento esperado | Responsable |
