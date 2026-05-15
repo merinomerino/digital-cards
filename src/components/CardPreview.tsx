@@ -140,6 +140,25 @@ export default function CardPreview({ card }: CardPreviewProps) {
               </svg>
             </a>
           )}
+          {card.googleMapsUrl && (
+            <a href={card.googleMapsUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-3 w-full px-4 py-3.5 bg-slate-800/70 hover:bg-slate-700/70 active:bg-slate-700 rounded-xl transition-colors group">
+              <span className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4.5 h-4.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs text-mts-muted leading-none mb-0.5">Cómo llegar</p>
+                <p className="text-white text-sm font-medium truncate">{card.direccion || 'Ver en Google Maps'}</p>
+              </div>
+              <svg className="w-4 h-4 text-slate-600 ml-auto group-hover:text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          )}
         </div>
 
         {activeSocials.length > 0 && (
@@ -167,7 +186,6 @@ export default function CardPreview({ card }: CardPreviewProps) {
         <Link href="/" className="flex items-center justify-center gap-1.5 text-xs text-mts-muted hover:text-slate-500 transition-colors pt-1">
           <span className="w-2 h-2 rounded-full bg-mts-primary" />
           Creado con <span className="text-indigo-400 font-semibold">CardLink</span>
-          <span className="text-slate-700">· Gratis</span>
         </Link>
       </div>
     </div>

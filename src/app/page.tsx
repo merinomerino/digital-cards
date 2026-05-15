@@ -1,12 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import toast, { Toaster } from 'react-hot-toast'
-import CardForm, { CardFormData } from '@/components/CardForm'
 import ExamplePhoneMockup, { ExamplePhoneMockupData } from '@/components/ExamplePhoneMockup'
-import { hashPin } from '@/lib/utils'
-import { createCard } from '@/lib/firestore'
-import { DatabaseError } from '@/lib/firestore'
 
 const WHATSAPP = 'https://wa.me/5218787020221?text=Hola,%20quiero%20una%20tarjeta%20digital%20personalizada%20para%20mi%20negocio'
 
@@ -134,48 +128,8 @@ const STEPS = [
 ]
 
 export default function HomePage() {
-  const router = useRouter()
-
-  const handleSubmit = async (data: CardFormData) => {
-    try {
-      const pinHash = hashPin(data.pin)
-      await createCard({
-        slug: data.slug,
-        pinHash,
-        nombre: data.nombre,
-        tituloProfesional: data.tituloProfesional,
-        empresa: data.empresa,
-        telefono: data.telefono,
-        email: data.email,
-        website: data.website,
-        fotoUrl: data.fotoUrl,
-        diseño: data.diseño,
-        tagline: data.tagline,
-        customFont: data.customFont,
-        customColors: data.customColors,
-        servicios: data.servicios,
-        horario: data.horario,
-        redesSociales: data.redesSociales,
-      })
-      toast.success('¡Tarjeta creada exitosamente!')
-      router.push(`/${data.slug}`)
-    } catch (err) {
-      if (err instanceof DatabaseError) {
-        toast.error(err.message, { duration: 5000 })
-      } else {
-        toast.error('Error al crear la tarjeta. Intenta de nuevo.')
-      }
-    }
-  }
-
   return (
     <div className="min-h-screen bg-mts-bg">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: { background: '#13131a', color: '#f1f5f9', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '14px' },
-        }}
-      />
 
       {/* ───── Navigation ───── */}
       <nav className="sticky top-0 z-40 glass border-b border-mts-border/50">
@@ -385,24 +339,6 @@ export default function HomePage() {
               </svg>
               contacto@merinotechsystems.com
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Formulario para clientes existentes ───── */}
-      <section id="crear" className="px-4 pb-20">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center mx-auto mb-3">
-              <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-white">¿Ya tienes tu tarjeta CardLink?</h2>
-            <p className="text-mts-muted text-sm mt-1">Crea o administra tu tarjeta si ya contrataste el servicio.</p>
-          </div>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-10">
-            <CardForm onSubmit={handleSubmit} />
           </div>
         </div>
       </section>

@@ -161,6 +161,15 @@ function ClassicCard({ card }: { card: Card }) {
               </div>
             </a>
           )}
+          {card.googleMapsUrl && (
+            <a href={card.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-colors" style={{ background: `${palette.accent}`, color: '#fff' }}>
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${palette.primary}22`, color: palette.primary }}>📍</span>
+              <div className="min-w-0">
+                <p className="text-xs text-mts-muted">Cómo llegar</p>
+                <p className="text-sm font-medium text-white truncate">{card.direccion || 'Ver en Google Maps'}</p>
+              </div>
+            </a>
+          )}
         </div>
 
         {activeSocials.length > 0 && (
@@ -202,6 +211,7 @@ function TattooCard({ card }: { card: Card }) {
     { title: 'Instagram', subtitle: 'Trabajos recientes', href: card.redesSociales.instagram ? getSocialUrl('instagram', card.redesSociales.instagram) : undefined, icon: '📸' },
     { title: 'Teléfono', subtitle: 'Llama ahora', href: card.telefono ? `tel:${card.telefono}` : undefined, icon: '📞' },
     { title: 'Website', subtitle: 'Conoce el estudio', href: card.website ? getWebsiteHref(card.website) : undefined, icon: '↗' },
+    { title: 'Cómo llegar', subtitle: card.direccion || 'Google Maps', href: card.googleMapsUrl || undefined, icon: '📍' },
   ].filter((button) => button.href)
 
   return (
@@ -294,6 +304,7 @@ function VetCard({ card }: { card: Card }) {
     { title: 'WhatsApp', subtitle: 'Agenda tu cita', href: card.redesSociales.whatsapp ? getSocialUrl('whatsapp', card.redesSociales.whatsapp) : undefined, icon: '💬' },
     { title: 'Teléfono', subtitle: 'Urgencias y consultas', href: card.telefono ? `tel:${card.telefono}` : undefined, icon: '📞' },
     { title: 'Instagram', subtitle: 'Historias y pacientes', href: card.redesSociales.instagram ? getSocialUrl('instagram', card.redesSociales.instagram) : undefined, icon: '📸' },
+    { title: 'Cómo llegar', subtitle: card.direccion || 'Google Maps', href: card.googleMapsUrl || undefined, icon: '📍' },
   ].filter((action) => action.href)
 
   return (

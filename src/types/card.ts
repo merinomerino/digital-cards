@@ -27,6 +27,8 @@ export interface Card {
   customFont?: CardFont;
   servicios?: { name: string; price: string }[];
   horario?: string;
+  direccion?: string;
+  googleMapsUrl?: string;
   views?: number;
   clicks?: number;
   whatsappClicks?: number;

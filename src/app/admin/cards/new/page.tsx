@@ -28,6 +28,8 @@ export default function AdminNewCardPage() {
         customColors: data.customColors,
         servicios: data.servicios,
         horario: data.horario,
+        direccion: data.direccion,
+        googleMapsUrl: data.googleMapsUrl,
         redesSociales: data.redesSociales,
       })
 

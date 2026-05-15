@@ -113,7 +113,7 @@ export default function AdminCards() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <a href={`/${card.slug}`} target="_blank" className="rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10">Ver</a>
-                  <Link href={`/${card.slug}/edit`} className="rounded-lg bg-indigo-500/20 px-3 py-2 text-xs font-medium text-indigo-300 transition hover:bg-indigo-500/30">Editar</Link>
+                  <Link href={`/admin/cards/${card.id}/edit`} className="rounded-lg bg-indigo-500/20 px-3 py-2 text-xs font-medium text-indigo-300 transition hover:bg-indigo-500/30">Editar</Link>
                   <button onClick={() => handleDelete(card)} className="rounded-lg bg-red-500/20 px-3 py-2 text-xs font-medium text-red-300 transition hover:bg-red-500/30">Eliminar</button>
                 </div>
               </div>

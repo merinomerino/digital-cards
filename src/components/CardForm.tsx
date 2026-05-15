@@ -23,6 +23,8 @@ export type CardFormData = {
   customColors?: CardCustomColors
   servicios: { name: string; price: string }[]
   horario: string
+  direccion: string
+  googleMapsUrl: string
   redesSociales: {
     linkedin: string
     instagram: string
@@ -140,6 +142,8 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
     customColors: initialData?.customColors ? { ...initialData.customColors } : undefined,
     servicios: (initialData as typeof initialData & { servicios?: CardFormData['servicios'] })?.servicios || [{ name: '', price: '' }],
     horario: (initialData as typeof initialData & { horario?: string })?.horario || '',
+    direccion: (initialData as typeof initialData & { direccion?: string })?.direccion || '',
+    googleMapsUrl: (initialData as typeof initialData & { googleMapsUrl?: string })?.googleMapsUrl || '',
     redesSociales: {
       linkedin: initialData?.redesSociales?.linkedin || '',
       instagram: initialData?.redesSociales?.instagram || '',
@@ -526,6 +530,36 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
           </div>
 
           <div>
+            <label className={labelClass}>Dirección física</label>
+            <input
+              type="text"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              className={inputClass}
+              placeholder="Calle Hidalgo 123, Col. Centro, Piedras Negras, Coah."
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Link de Google Maps</label>
+            <input
+              type="url"
+              name="googleMapsUrl"
+              value={formData.googleMapsUrl}
+              onChange={handleChange}
+              className={inputClass}
+              placeholder="https://maps.google.com/..."
+            />
+            {formData.googleMapsUrl && (
+              <a href={formData.googleMapsUrl} target="_blank" rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline">
+                Verificar enlace ↗
+              </a>
+            )}
+          </div>
+
+          <div>
             <div className="flex items-center justify-between mb-2">
               <label className={labelClass}>Servicios / Precios</label>
               <button type="button" onClick={addService}
@@ -567,7 +601,7 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
         className="w-full py-3 px-4 bg-mts-primary hover:bg-mts-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
       >
         {loading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-        {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear mi tarjeta'}
+        {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear tarjeta'}
         {!loading && !isEditing && (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

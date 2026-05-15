@@ -27,7 +27,7 @@ export default function AdminEditor() {
         {cards.map(card => (
           <Link
             key={card.id}
-            href={`/${card.slug}/edit`}
+            href={`/admin/cards/${card.id}/edit`}
             className="bg-[#13131a] border border-white/5 rounded-2xl p-5 hover:border-indigo-500/30 transition-colors group"
           >
             <div className="flex items-center gap-3 mb-3">

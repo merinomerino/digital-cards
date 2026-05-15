@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   getDocs,
+  getDoc,
   addDoc,
   updateDoc,
   query,
@@ -45,6 +46,27 @@ function findErrorType(err: unknown): string | null {
     return 'conexion'
   }
   return null
+}
+
+export async function getCardById(id: string): Promise<Card | null> {
+  checkAvailable()
+  try {
+    const docSnap = await getDoc(doc(db!, COLLECTION, id))
+    if (!docSnap.exists()) return null
+    const data = docSnap.data()
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAt: (data.createdAt as Timestamp).toDate(),
+      updatedAt: (data.updatedAt as Timestamp).toDate(),
+    } as Card
+  } catch (err) {
+    const errorType = findErrorType(err)
+    if (errorType === 'conexion') {
+      throw new DatabaseError('No se pudo conectar a la base de datos. Verifica tu conexión.')
+    }
+    throw err
+  }
 }
 
 export async function getCardBySlug(slug: string): Promise<Card | null> {

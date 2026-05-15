@@ -99,12 +99,13 @@ export default function CardPage({ params }: Props) {
           </div>
           <h1 className="text-xl font-bold text-mts-text">Tarjeta no encontrada</h1>
           <p className="text-mts-muted text-sm leading-relaxed">
-            La tarjeta que buscas no existe. ¿Te gustaría crear la tuya?
+            La tarjeta que buscas no existe. ¿Quieres una para tu negocio?
           </p>
-          <Link href="/"
+          <a href="https://wa.me/5218787020221?text=Hola,%20quiero%20una%20tarjeta%20digital%20personalizada%20para%20mi%20negocio"
+            target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-mts-primary hover:bg-mts-primary-hover text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm">
-            Crear mi tarjeta
-          </Link>
+            Solicitar mi tarjeta
+          </a>
         </div>
       </div>
     )
@@ -174,12 +175,14 @@ export default function CardPage({ params }: Props) {
         </div>
 
         <Link
-          href="/#crear"
+          href="https://wa.me/5218787020221?text=Hola,%20quiero%20una%20tarjeta%20digital%20personalizada%20para%20mi%20negocio"
+          target="_blank"
+          rel="noopener noreferrer"
           className="block glass rounded-2xl p-5 border border-mts-border/50 text-center hover:bg-white/[0.03] transition-colors group"
         >
-          <p className="text-xs text-mts-muted mb-1">¿Aún no tienes tu tarjeta digital?</p>
+          <p className="text-xs text-mts-muted mb-1">¿Quieres una tarjeta digital para tu negocio?</p>
           <p className="text-sm text-indigo-400 font-semibold group-hover:text-indigo-300 transition-colors">
-            Crea la tuya gratis → <span className="text-mts-muted text-xs font-normal">cardlink.mx</span>
+            Conoce CardLink → <span className="text-mts-muted text-xs font-normal">cardlink.mx</span>
           </p>
         </Link>
       </div>
