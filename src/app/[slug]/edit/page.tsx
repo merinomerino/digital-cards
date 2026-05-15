@@ -37,6 +37,12 @@ export default function EditPage({ params }: Props) {
         email: data.email,
         website: data.website,
         fotoUrl: data.fotoUrl,
+        diseño: data.diseño,
+        tagline: data.tagline,
+        customFont: data.customFont,
+        customColors: data.customColors,
+        servicios: data.servicios,
+        horario: data.horario,
         redesSociales: data.redesSociales,
       })
       toast.success('¡Tarjeta actualizada!')

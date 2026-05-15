@@ -1,71 +1,129 @@
-import { notFound } from 'next/navigation'
-import { getCardBySlug, FirestoreUnavailableError } from '@/lib/firestore'
-import CardPreview from '@/components/CardPreview'
+'use client'
+
+import { useState, useEffect, useRef, use } from 'react'
+import Link from 'next/link'
+import { getCardBySlug, DatabaseError } from '@/lib/firestore'
+import DesignCardPreview from '@/components/DesignCardPreview'
 import QRCodeDisplay from '@/components/QRCodeDisplay'
 import AdBanner from '@/components/AdBanner'
 import ShareButton from '@/components/ShareButton'
-import Link from 'next/link'
+import { trackCardView } from '@/lib/analytics'
+import type { Card } from '@/types/card'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: Props) {
-  const { slug } = await params
-  const card = await getCardBySlug(slug)
-  if (!card) return { title: 'Tarjeta no encontrada' }
-  return {
-    title: `${card.nombre} — ${card.tituloProfesional}`,
-    description: `${card.nombre}, ${card.tituloProfesional}${card.empresa ? ` en ${card.empresa}` : ''}`,
-    openGraph: {
-      title: card.nombre,
-      description: card.tituloProfesional,
-      images: card.fotoUrl ? [card.fotoUrl] : [],
-      type: 'profile',
-    },
-    twitter: {
-      card: 'summary',
-      title: card.nombre,
-      description: card.tituloProfesional,
-      images: card.fotoUrl ? [card.fotoUrl] : [],
-    },
-  }
-}
+const DEMO_SLUGS = ['chekolettes', 'bigotes', 'viajes-merino']
 
-export default async function CardPage({ params }: Props) {
-  const { slug } = await params
+export default function CardPage({ params }: Props) {
+  const { slug } = use(params)
+  const [card, setCard] = useState<Card | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  let card = null
-  let dbError = false
+  const slugRef = useRef(slug)
+  useEffect(() => {
+    slugRef.current = slug
+    getCardBySlug(slug).then(c => {
+      if (slugRef.current !== slug) return
+      if (!c) setError('not-found')
+      else {
+        setCard(c)
+        document.title = `${c.nombre} — ${c.tituloProfesional} | CardLink`
+      }
+    }).catch(err => {
+      if (slugRef.current !== slug) return
+      if (err instanceof DatabaseError) setError(err.message)
+      else setError('Ocurrió un error al cargar la tarjeta.')
+    }).finally(() => {
+      if (slugRef.current === slug) setLoading(false)
+    })
+    // Track view
+    trackCardView(slug, slug)
+  }, [slug])
 
-  try {
-    card = await getCardBySlug(slug)
-  } catch (err) {
-    if (err instanceof FirestoreUnavailableError) {
-      dbError = true
-    } else {
-      throw err
-    }
-  }
-
-  if (dbError) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
-        <div className="max-w-sm w-full text-center space-y-4">
+      <div className="min-h-screen bg-mts-bg flex items-center justify-center px-4">
+        <div className="max-w-sm w-full space-y-4 animate-pulse">
+          <div className="h-64 rounded-3xl bg-white/5" />
+          <div className="h-20 rounded-2xl bg-white/5" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-40 rounded-2xl bg-white/5" />
+            <div className="h-40 rounded-2xl bg-white/5" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error === 'not-found') {
+    if (DEMO_SLUGS.includes(slug)) {
+      return (
+        <div className="min-h-screen bg-mts-bg flex items-center justify-center px-4">
+          <div className="max-w-sm w-full text-center space-y-5">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-bold text-mts-text">Tarjeta no encontrada</h1>
+            <p className="text-mts-muted text-sm leading-relaxed">
+              Esta tarjeta aún no ha sido creada en la base de datos.
+              Ve al <span className="text-indigo-400 font-medium">seed</span> para crearla automáticamente.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link href="/seed"
+                className="inline-flex items-center justify-center gap-2 bg-mts-primary hover:bg-mts-primary-hover text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm">
+                Ir a Seed
+              </Link>
+              <Link href="/"
+                className="text-mts-muted hover:text-white text-sm transition-colors">
+                ← Volver al inicio
+              </Link>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className="min-h-screen bg-mts-bg flex items-center justify-center px-4">
+        <div className="max-w-sm w-full text-center space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto">
+            <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-mts-text">Tarjeta no encontrada</h1>
+          <p className="text-mts-muted text-sm leading-relaxed">
+            La tarjeta que buscas no existe. ¿Te gustaría crear la tuya?
+          </p>
+          <Link href="/"
+            className="inline-flex items-center gap-2 bg-mts-primary hover:bg-mts-primary-hover text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm">
+            Crear mi tarjeta
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-mts-bg flex items-center justify-center px-4">
+        <div className="max-w-sm w-full text-center space-y-5">
           <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto">
             <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-white">Servicio no disponible</h1>
-          <p className="text-slate-400 text-sm">
-            No se pudo conectar a la base de datos. Intenta de nuevo en unos momentos.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm"
-          >
+          <h1 className="text-xl font-bold text-mts-text">Servicio no disponible</h1>
+          <p className="text-mts-muted text-sm leading-relaxed">{error}</p>
+          <Link href="/"
+            className="inline-flex items-center gap-2 bg-mts-primary hover:bg-mts-primary-hover text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm">
             ← Volver al inicio
           </Link>
         </div>
@@ -73,42 +131,29 @@ export default async function CardPage({ params }: Props) {
     )
   }
 
-  if (!card) notFound()
+  if (!card) return null
 
   const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cardlink.mx'}/${slug}`
 
   return (
-    <div className="min-h-screen bg-[#0f172a] pt-5 px-4 pb-12">
+    <div className="min-h-screen bg-mts-bg pt-5 px-4 pb-12">
       <div className="max-w-sm mx-auto space-y-4">
-
-        {/* Banner superior (compacto) */}
         <AdBanner
           slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP || 'SLOT_TOP'}
           format="horizontal"
           className="rounded-xl overflow-hidden"
         />
+        <DesignCardPreview card={card} />
 
-        {/* Tarjeta principal */}
-        <CardPreview card={card} />
-
-        {/* Compartir — sección prominente */}
-        <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
-          <p className="text-slate-500 text-xs text-center mb-3 font-semibold uppercase tracking-wider">
+        <div className="bg-mts-surface/60 border border-mts-border/50 rounded-2xl p-4">
+          <p className="text-mts-muted text-xs text-center mb-3 font-semibold uppercase tracking-wider">
             Compartir
           </p>
-          <ShareButton
-            url={cardUrl}
-            name={card.nombre}
-            title={card.tituloProfesional}
-          />
+          <ShareButton url={cardUrl} name={card.nombre} title={card.tituloProfesional} />
         </div>
 
-        {/* QR + editar en la misma fila de secciones */}
         <div className="grid grid-cols-2 gap-3">
-          {/* QR compacto */}
           <QRCodeDisplay url={cardUrl} slug={slug} />
-
-          {/* Acciones */}
           <div className="flex flex-col gap-3">
             <AdBanner
               slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM || 'SLOT_BOTTOM'}
@@ -117,7 +162,7 @@ export default async function CardPage({ params }: Props) {
             />
             <Link
               href={`/${slug}/edit`}
-              className="flex items-center justify-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 text-slate-400 hover:text-white hover:border-slate-600 transition-colors text-sm font-medium"
+              className="flex items-center justify-center gap-2 bg-mts-surface/60 border border-mts-border/50 rounded-2xl p-4 text-mts-muted hover:text-white hover:border-mts-muted transition-colors text-sm font-medium"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -128,8 +173,16 @@ export default async function CardPage({ params }: Props) {
           </div>
         </div>
 
+        <Link
+          href="/#crear"
+          className="block glass rounded-2xl p-5 border border-mts-border/50 text-center hover:bg-white/[0.03] transition-colors group"
+        >
+          <p className="text-xs text-mts-muted mb-1">¿Aún no tienes tu tarjeta digital?</p>
+          <p className="text-sm text-indigo-400 font-semibold group-hover:text-indigo-300 transition-colors">
+            Crea la tuya gratis → <span className="text-mts-muted text-xs font-normal">cardlink.mx</span>
+          </p>
+        </Link>
       </div>
     </div>
   )
 }
-

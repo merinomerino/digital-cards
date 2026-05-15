@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Términos de Servicio',
@@ -14,9 +15,9 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-10">
-          <a href="/" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mb-4 inline-block">
+          <Link href="/" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mb-4 inline-block">
             ← Volver a CardLink
-          </a>
+          </Link>
           <h1 className="text-3xl font-bold text-white">Términos de Servicio</h1>
           <p className="text-slate-400 mt-2 text-sm">Última actualización: {LAST_UPDATED}</p>
         </div>
@@ -27,7 +28,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Aceptación de los términos</h2>
             <p className="text-slate-400 leading-relaxed">
-              Al acceder o usar <strong className="text-slate-200">CardLink</strong> (en adelante "el Servicio"), operado por{' '}
+              Al acceder o usar <strong className="text-slate-200">CardLink</strong> (en adelante &ldquo;el Servicio&rdquo;), operado por{' '}
               <strong className="text-slate-200">Merino Tech Systems</strong>, usted acepta estar sujeto a estos Términos de Servicio.
               Si no está de acuerdo con alguno de ellos, por favor no use el Servicio.
             </p>
@@ -108,7 +109,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">8. Limitación de responsabilidad</h2>
             <p className="text-slate-400 leading-relaxed">
-              CardLink se proporciona <strong className="text-slate-200">"tal cual"</strong>, sin garantías de ningún tipo.
+              CardLink se proporciona <strong className="text-slate-200">&ldquo;tal cual&rdquo;</strong>, sin garantías de ningún tipo.
               Merino Tech Systems no será responsable por:
             </p>
             <ul className="list-disc pl-5 mt-2 space-y-1 text-slate-400">

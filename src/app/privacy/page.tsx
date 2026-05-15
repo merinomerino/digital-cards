@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad',
@@ -15,9 +16,9 @@ export default function PrivacyPage() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-10">
-          <a href="/" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mb-4 inline-block">
+          <Link href="/" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mb-4 inline-block">
             ← Volver a CardLink
-          </a>
+          </Link>
           <h1 className="text-3xl font-bold text-white">Política de Privacidad</h1>
           <p className="text-slate-400 mt-2 text-sm">Última actualización: {LAST_UPDATED}</p>
         </div>
@@ -110,7 +111,7 @@ export default function PrivacyPage() {
             <p className="text-slate-400 leading-relaxed">
               Para ejercerlos, envíe un correo a{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-indigo-400 hover:underline">{CONTACT_EMAIL}</a>{' '}
-              con el asunto <em>"Derechos ARCO — CardLink"</em> e incluya:
+               con el asunto <em>&ldquo;Derechos ARCO &mdash; CardLink&rdquo;</em> e incluya:
             </p>
             <ul className="list-disc pl-5 mt-2 space-y-1 text-slate-400">
               <li>Nombre completo</li>
