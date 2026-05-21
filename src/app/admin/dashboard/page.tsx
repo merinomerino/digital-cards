@@ -20,7 +20,7 @@ export default function AdminDashboard() {
   const METRICS = [
     { label: 'Tarjetas activas', value: cards.length, change: '+0', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
     { label: 'Con diseño único', value: activeCards.length, change: activeCards.length > 0 ? `+${activeCards.length}` : '0', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'Clientes', value: cards.length > 0 ? '3' : '0', change: '-', color: 'text-violet-400', bg: 'bg-violet-500/10' },
+    { label: 'Clientes', value: cards.length, change: cards.length > 0 ? `+${cards.length}` : '0', color: 'text-violet-400', bg: 'bg-violet-500/10' },
     { label: 'Vistas hoy', value: todayViews, change: `+${todayClicks} clicks`, color: 'text-amber-400', bg: 'bg-amber-500/10' },
   ]
 
