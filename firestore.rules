@@ -37,6 +37,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Colección de usuarios (admins y clientes de CardLink)
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer perfiles (admin panel necesita listar usuarios)
+      allow read: if request.auth != null;
+      // Solo el propio usuario puede crear/actualizar su documento (setup, registro)
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Nunca se permite borrar desde cliente
+      allow delete: if false;
+    }
+
     // Bloquear cualquier otra colección
     match /{document=**} {
       allow read, write: if false;

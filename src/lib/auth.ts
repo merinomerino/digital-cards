@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   createUserWithEmailAndPassword,
+  deleteUser,
   type User as FirebaseUser,
 } from 'firebase/auth'
 import {
@@ -69,7 +70,13 @@ export async function registerUser(email: string, password: string): Promise<App
     displayName: email.split('@')[0],
   }
   const userRef = doc(db, 'users', cred.user.uid)
-  await setDoc(userRef, userData)
+  try {
+    await setDoc(userRef, userData)
+  } catch (firestoreErr) {
+    /* Rollback: eliminar el usuario de Firebase Auth si Firestore falla */
+    await deleteUser(cred.user).catch(() => {})
+    throw firestoreErr
+  }
   return userData
 }
 

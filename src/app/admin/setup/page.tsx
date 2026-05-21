@@ -20,8 +20,10 @@ function firebaseErrorMsg(code: string): string {
     'auth/invalid-email': 'El correo electrónico no es válido.',
     'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
     'auth/network-request-failed': 'Sin conexión. Revisa tu red.',
+    'auth/operation-not-allowed': 'Email/Password no está habilitado en Firebase Console. Actívalo en Authentication → Sign-in method.',
+    'permission-denied': 'Firestore bloqueó la escritura. Verifica las Security Rules del proyecto.',
   }
-  return map[code] ?? 'Error al crear la cuenta. Inténtalo de nuevo.'
+  return map[code] ?? `Error al crear la cuenta (${code || 'desconocido'}). Inténtalo de nuevo.`
 }
 
 export default function AdminSetupPage() {
