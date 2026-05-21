@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Toaster } from 'react-hot-toast'
-import { clearAdminToken, getAdminToken } from '@/lib/adminAuth'
+import { onAdminAuth, logoutAdmin, getAppUser, type AppUser } from '@/lib/auth'
+import type { User as FirebaseUser } from 'firebase/auth'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: '◻' },
@@ -18,92 +19,75 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const router = useRouter()
   const [authState, setAuthState] = useState<'checking' | 'guest' | 'authenticated'>('checking')
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null)
+  const [appUser, setAppUser] = useState<AppUser | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isLoginPage = pathname === '/admin/login'
+  const isSetupPage = pathname === '/admin/setup'
+  const isPublicAdminPage = isLoginPage || isSetupPage
 
   useEffect(() => {
-    let cancelled = false
-
-    const verifyAdminSession = async () => {
-      const token = getAdminToken()
-
-      if (!token) {
-        if (!cancelled) {
-          setAuthState('guest')
-          if (!isLoginPage) {
-            router.replace('/admin/login')
-          }
-        }
+    const unsubscribe = onAdminAuth(async (firebaseUser) => {
+      if (!firebaseUser) {
+        setCurrentUser(null)
+        setAppUser(null)
+        setAuthState('guest')
+        if (!isPublicAdminPage) router.replace('/admin/login')
         return
       }
 
+      /* Fetch rol desde Firestore */
       try {
-        const response = await fetch('/api/admin/auth', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-          cache: 'no-store',
-        })
-
-        if (!response.ok) {
-          clearAdminToken()
-          if (!cancelled) {
-            setAuthState('guest')
-            if (!isLoginPage) {
-              router.replace('/admin/login')
-            }
-          }
+        const userData = await getAppUser(firebaseUser.uid)
+        /* Bloquear si es cliente */
+        if (userData?.role === 'client' || userData?.active === false) {
+          await logoutAdmin()
+          setAuthState('guest')
+          router.replace('/admin/login')
           return
         }
-
-        if (!cancelled) {
-          setAuthState('authenticated')
-          if (isLoginPage) {
-            router.replace('/admin/dashboard')
-          }
-        }
+        setAppUser(userData)
       } catch {
-        clearAdminToken()
-        if (!cancelled) {
-          setAuthState('guest')
-          if (!isLoginPage) {
-            router.replace('/admin/login')
-          }
-        }
+        /* Si no existe en Firestore pero está autenticado, permitir como root */
+        setAppUser(null)
       }
-    }
 
-    void verifyAdminSession()
+      setCurrentUser(firebaseUser)
+      setAuthState('authenticated')
+      if (isLoginPage) router.replace('/admin/dashboard')
+    })
 
-    return () => {
-      cancelled = true
-    }
-  }, [isLoginPage, pathname, router])
+    return unsubscribe
+  }, [isLoginPage, isPublicAdminPage, router])
 
-  const handleLogout = () => {
-    clearAdminToken()
+  const handleLogout = async () => {
     setSidebarOpen(false)
+    await logoutAdmin()
     router.replace('/admin/login')
   }
 
+  /* Spinner de verificación */
   if (authState === 'checking') {
     return (
       <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-mts-muted">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-sm">Verificando acceso al panel...</p>
+          <p className="text-sm">Verificando sesión...</p>
         </div>
       </div>
     )
   }
 
-  if (isLoginPage) {
-    return <>{children}</>
-  }
+  /* Páginas públicas del admin (login, setup) */
+  if (isPublicAdminPage) return <>{children}</>
 
-  if (authState !== 'authenticated') {
-    return null
-  }
+  /* No autenticado */
+  if (authState !== 'authenticated') return null
+
+  const displayEmail = currentUser?.email ?? appUser?.email ?? 'Admin'
+  const displayRole = appUser?.role ?? 'root'
+  const displayName = appUser?.displayName ?? displayEmail.split('@')[0]
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] flex">
@@ -119,6 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }}
       />
 
+      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#0F0F1A] transition-transform duration-200 lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex h-16 items-center justify-between border-b border-white/5 px-5">
           <Link href="/admin/dashboard" className="text-lg font-bold tracking-tight text-white">
@@ -147,14 +132,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
+        {/* User info + logout */}
         <div className="absolute inset-x-0 bottom-0 border-t border-white/5 p-3">
           <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-3">
-            <p className="text-xs uppercase tracking-[0.25em] text-indigo-300/80">MTS</p>
-            <p className="mt-1 text-sm font-medium text-white">Administrador CardLink</p>
-            <p className="mt-1 text-xs text-mts-muted">Sesión local verificada con ADMIN_PASSWORD.</p>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-300 shrink-0">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                <p className="text-xs text-mts-muted truncate">{displayEmail}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-3">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                displayRole === 'root' ? 'bg-amber-900/40 text-amber-400' : 'bg-indigo-900/40 text-indigo-400'
+              }`}>
+                {displayRole}
+              </span>
+              <span className="text-[10px] text-mts-muted">🔒 Firebase Auth</span>
+            </div>
             <button
               onClick={handleLogout}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-mts-muted transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-mts-muted transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200"
             >
               ⏻ Cerrar sesión
             </button>
@@ -162,8 +162,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {sidebarOpen && <button className="fixed inset-0 z-40 bg-black/55 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Cerrar menú" />}
+      {sidebarOpen && (
+        <button
+          className="fixed inset-0 z-40 bg-black/55 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Cerrar menú"
+        />
+      )}
 
+      {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b border-white/5 px-4 lg:px-8">
           <div className="flex items-center gap-3">
@@ -172,16 +179,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-mts-muted">Panel seguro</p>
-              <p className="text-sm font-semibold text-white">{NAV_ITEMS.find((item) => pathname.startsWith(item.href))?.label || 'CardLink Admin'}</p>
+              <p className="text-sm font-semibold text-white">
+                {NAV_ITEMS.find((item) => pathname.startsWith(item.href))?.label || 'CardLink Admin'}
+              </p>
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-mts-muted transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200"
-          >
-            Cerrar sesión
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:block text-xs text-mts-muted truncate max-w-[180px]">{displayEmail}</span>
+            <button
+              onClick={handleLogout}
+              className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-mts-muted transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200"
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
