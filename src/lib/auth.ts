@@ -72,9 +72,16 @@ export async function registerUser(email: string, password: string): Promise<App
   const userRef = doc(db, 'users', cred.user.uid)
   try {
     await setDoc(userRef, userData)
-  } catch (firestoreErr) {
+  } catch (firestoreErr: unknown) {
     /* Rollback: eliminar el usuario de Firebase Auth si Firestore falla */
     await deleteUser(cred.user).catch(() => {})
+    // Re-lanzar con code legible si está disponible
+    const code = (firestoreErr as { code?: string }).code
+    if (code) {
+      const e = firestoreErr as Error & { code: string }
+      e.code = code
+      throw e
+    }
     throw firestoreErr
   }
   return userData

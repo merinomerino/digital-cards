@@ -14,7 +14,7 @@ import { registerUser } from '@/lib/auth'
 
 type Step = 'verify' | 'register' | 'done'
 
-function firebaseErrorMsg(code: string): string {
+function firebaseErrorMsg(code: string, message?: string): string {
   const map: Record<string, string> = {
     'auth/email-already-in-use': 'Ya existe una cuenta con ese correo. Ve a iniciar sesión.',
     'auth/invalid-email': 'El correo electrónico no es válido.',
@@ -23,7 +23,12 @@ function firebaseErrorMsg(code: string): string {
     'auth/operation-not-allowed': 'Email/Password no está habilitado en Firebase Console. Actívalo en Authentication → Sign-in method.',
     'permission-denied': 'Firestore bloqueó la escritura. Verifica las Security Rules del proyecto.',
   }
-  return map[code] ?? `Error al crear la cuenta (${code || 'desconocido'}). Inténtalo de nuevo.`
+  if (map[code]) return map[code]
+  if (message?.includes('Firebase no está configurado') || message?.includes('not configured')) {
+    return 'Firebase no está configurado correctamente. Verifica las variables de entorno (NEXT_PUBLIC_FIREBASE_*).'
+  }
+  const detail = code || message || 'desconocido'
+  return `Error al crear la cuenta (${detail}). Inténtalo de nuevo.`
 }
 
 export default function AdminSetupPage() {
@@ -82,7 +87,9 @@ export default function AdminSetupPage() {
       setStep('done')
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? ''
-      const message = firebaseErrorMsg(code)
+      const rawMsg = (err as { message?: string }).message ?? ''
+      console.error('[AdminSetup] registerUser error:', err)
+      const message = firebaseErrorMsg(code, rawMsg)
       setError(message)
       toast.error(message)
     } finally {
