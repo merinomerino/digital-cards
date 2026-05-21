@@ -28,6 +28,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isPublicAdminPage = isLoginPage || isSetupPage
 
   useEffect(() => {
+    /* No configurar listener de auth para páginas públicas */
+    if (isPublicAdminPage) {
+      setAuthState('guest')
+      return
+    }
+
     const unsubscribe = onAdminAuth(async (firebaseUser) => {
       if (!firebaseUser) {
         setCurrentUser(null)
@@ -67,7 +73,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.replace('/admin/login')
   }
 
-  /* Spinner de verificación */
+  /* Páginas públicas del admin — renderizar sin esperar auth */
+  if (isPublicAdminPage) {
+    return (
+      <>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: { background: '#13131A', color: '#F1F5F9', border: '1px solid #1E293B', borderRadius: '14px' },
+          }}
+        />
+        {children}
+      </>
+    )
+  }
+
+  /* Spinner de verificación (solo para páginas protegidas) */
   if (authState === 'checking') {
     return (
       <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
@@ -78,9 +99,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     )
   }
-
-  /* Páginas públicas del admin (login, setup) */
-  if (isPublicAdminPage) return <>{children}</>
 
   /* No autenticado */
   if (authState !== 'authenticated') return null
