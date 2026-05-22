@@ -21,12 +21,25 @@ const FALLBACK_PALETTE: Palette = {
   text: '#c7d2fe',
 }
 
-const FONT_FAMILIES = {
+const FONT_FAMILIES: Record<string, string> = {
   inter: 'Inter, ui-sans-serif, system-ui, sans-serif',
   playfair: '"Playfair Display", Georgia, serif',
   mono: '"JetBrains Mono", "SFMono-Regular", monospace',
   montserrat: 'Montserrat, Inter, ui-sans-serif, system-ui, sans-serif',
+  poppins: 'var(--font-poppins), Poppins, Inter, ui-sans-serif, system-ui, sans-serif',
+  raleway: 'var(--font-raleway), Raleway, Inter, ui-sans-serif, system-ui, sans-serif',
+  oswald: 'var(--font-oswald), Oswald, Inter, ui-sans-serif, system-ui, sans-serif',
 } as const
+
+const ANIMATION_CLASSES: Record<string, string> = {
+  none: '',
+  fade: 'card-anim-fade',
+  'slide-up': 'card-anim-slide-up',
+  zoom: 'card-anim-zoom',
+  bounce: 'card-anim-bounce',
+  glow: 'card-anim-glow',
+  float: 'card-anim-float',
+}
 
 const socialPlatforms: { key: SocialNetwork; label: string }[] = [
   { key: 'linkedin', label: 'LinkedIn' },
@@ -43,15 +56,29 @@ function getPalette(card: Card): Palette {
 }
 
 function getFontFamily(font?: Card['customFont']): string | undefined {
-  if (!font) {
-    return undefined
-  }
-
+  if (!font) return undefined
   return FONT_FAMILIES[font]
 }
 
+function getCardBgStyle(card: Card): CSSProperties {
+  if (card.backgroundType === 'image' && card.backgroundImage) {
+    return {
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.72)), url(${card.backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }
+  }
+  if (card.backgroundType === 'gradient' && card.customGradient) {
+    return { background: card.customGradient }
+  }
+  return {}
+}
+
 function getContainerStyle(card: Card): CSSProperties {
-  return { fontFamily: getFontFamily(card.customFont) }
+  const bg = getCardBgStyle(card)
+  const style: CSSProperties = {}
+  if (card.customFont) style.fontFamily = getFontFamily(card.customFont)
+  return { ...style, ...bg }
 }
 
 function getInitials(name: string): string {
@@ -110,9 +137,9 @@ function ClassicCard({ card }: { card: Card }) {
     <div
       className="w-full overflow-hidden rounded-3xl border shadow-2xl animate-scale-in"
       style={{
-        ...getContainerStyle(card),
         background: `linear-gradient(165deg, ${palette.bg} 0%, ${palette.secondary} 120%)`,
         borderColor: `${palette.primary}22`,
+        ...getContainerStyle(card),
       }}
     >
       <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${palette.primary}, ${palette.secondary}, ${palette.primary})` }} />
@@ -217,7 +244,7 @@ function TattooCard({ card }: { card: Card }) {
   return (
     <div
       className="overflow-hidden rounded-[28px] shadow-2xl"
-      style={{ ...getContainerStyle(card), background: palette.bg, border: `1px solid ${palette.primary}20` }}
+      style={{ background: palette.bg, border: `1px solid ${palette.primary}20`, ...getContainerStyle(card) }}
     >
       <div
         className="relative px-6 pb-5 pt-8"
@@ -308,7 +335,7 @@ function VetCard({ card }: { card: Card }) {
   ].filter((action) => action.href)
 
   return (
-    <div className="overflow-hidden rounded-[28px] shadow-2xl" style={{ ...getContainerStyle(card), background: `linear-gradient(180deg, ${palette.bg} 0%, ${palette.secondary} 130%)`, border: `1px solid ${palette.primary}18` }}>
+    <div className="overflow-hidden rounded-[28px] shadow-2xl" style={{ background: `linear-gradient(180deg, ${palette.bg} 0%, ${palette.secondary} 130%)`, border: `1px solid ${palette.primary}18`, ...getContainerStyle(card) }}>
       <div className="relative px-6 pb-6 pt-8" style={{ background: `linear-gradient(160deg, ${palette.primary}22 0%, transparent 75%)` }}>
         <div className="absolute -right-8 top-0 text-[110px] opacity-[0.08]">🐾</div>
         <div className="relative z-10 flex items-center gap-4 rounded-[24px] px-4 py-4" style={{ background: `${palette.primary}10`, border: `1px solid ${palette.primary}16` }}>
@@ -374,7 +401,7 @@ function TravelCard({ card }: { card: Card }) {
   const contactHref = getCtaHref(card)
 
   return (
-    <div className="overflow-hidden rounded-[28px] shadow-2xl" style={{ ...getContainerStyle(card), background: `linear-gradient(180deg, ${palette.bg} 0%, ${palette.secondary} 130%)`, border: `1px solid ${palette.primary}16` }}>
+    <div className="overflow-hidden rounded-[28px] shadow-2xl" style={{ background: `linear-gradient(180deg, ${palette.bg} 0%, ${palette.secondary} 130%)`, border: `1px solid ${palette.primary}16`, ...getContainerStyle(card) }}>
       <div className="relative overflow-hidden px-6 pb-7 pt-8" style={{ background: `linear-gradient(135deg, ${palette.secondary} 0%, ${palette.bg} 55%, ${palette.primary}18 100%)` }}>
         <div style={{ position: 'absolute', inset: 0, opacity: 0.25, backgroundImage: `radial-gradient(circle at 15% 25%, ${palette.primary} 1px, transparent 1px), radial-gradient(circle at 70% 40%, ${palette.primary} 1px, transparent 1px), linear-gradient(120deg, transparent 45%, ${palette.primary}22 45%, transparent 48%)`, backgroundSize: '60px 60px, 80px 80px, 100% 100%' }} />
         <div className="relative z-10 rounded-[24px] px-5 py-5" style={{ background: 'rgba(8,17,32,0.6)', border: `1px solid ${palette.primary}1a`, backdropFilter: 'blur(6px)' }}>
@@ -430,15 +457,46 @@ function TravelCard({ card }: { card: Card }) {
 
 export default function DesignCardPreview({ card }: Props) {
   const diseño = card.diseño || 'clasico'
+  const animClass = ANIMATION_CLASSES[card.animation || 'none'] || ''
+  const slugClass = `card-${card.slug.replace(/[^a-z0-9]/g, '-')}`
 
-  switch (diseño) {
-    case 'tattoo':
-      return <TattooCard card={card} />
-    case 'vet':
-      return <VetCard card={card} />
-    case 'travel':
-      return <TravelCard card={card} />
-    default:
-      return <ClassicCard card={card} />
-  }
+  const cardComponent = (() => {
+    switch (diseño) {
+      case 'tattoo': return <TattooCard card={card} />
+      case 'vet': return <VetCard card={card} />
+      case 'travel': return <TravelCard card={card} />
+      default: return <ClassicCard card={card} />
+    }
+  })()
+
+  return (
+    <div className={`${slugClass} ${animClass}`.trim()}>
+      {card.customCss && (
+        <style dangerouslySetInnerHTML={{ __html: card.customCss }} />
+      )}
+
+      {card.headerBanner && (
+        <div className="mb-4 overflow-hidden rounded-2xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={card.headerBanner} alt="" className="w-full h-36 object-cover" />
+        </div>
+      )}
+
+      {card.logoUrl && (
+        <div className="mb-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={card.logoUrl} alt={card.nombre} className="max-h-14 max-w-[180px] object-contain drop-shadow-lg" />
+        </div>
+      )}
+
+      {cardComponent}
+
+      {card.customHtml && (
+        <div
+          className="mt-4"
+          dangerouslySetInnerHTML={{ __html: card.customHtml }}
+        />
+      )}
+    </div>
+  )
 }

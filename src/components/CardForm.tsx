@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, CardCustomColors, CardFont } from '@/types/card'
+import { Card, CardCustomColors, CardFont, CardAnimation, CardBackgroundType } from '@/types/card'
 import { toSlug } from '@/lib/utils'
 import { slugExists } from '@/lib/firestore'
 import { getTemplate } from '@/lib/templates/registry'
@@ -16,11 +16,19 @@ export type CardFormData = {
   email: string
   website: string
   fotoUrl: string
+  logoUrl: string
+  headerBanner: string
   pin: string
   diseño: 'clasico' | 'tattoo' | 'vet' | 'travel'
   tagline: string
   customFont: CardFont
+  animation: CardAnimation
+  backgroundType: CardBackgroundType
+  backgroundImage: string
+  customGradient: string
   customColors?: CardCustomColors
+  customCss: string
+  customHtml: string
   servicios: { name: string; price: string }[]
   horario: string
   direccion: string
@@ -88,6 +96,19 @@ const fontOptions: { value: CardFont; label: string; description: string; fontFa
   { value: 'playfair', label: 'Playfair Display', description: 'Elegante y editorial', fontFamily: '"Playfair Display", Georgia, serif' },
   { value: 'mono', label: 'JetBrains Mono', description: 'Técnica y moderna', fontFamily: '"JetBrains Mono", "SFMono-Regular", monospace' },
   { value: 'montserrat', label: 'Montserrat', description: 'Moderna y versátil', fontFamily: 'Montserrat, ui-sans-serif, system-ui, sans-serif' },
+  { value: 'poppins', label: 'Poppins', description: 'Redondeada y amigable', fontFamily: 'Poppins, ui-sans-serif, system-ui, sans-serif' },
+  { value: 'raleway', label: 'Raleway', description: 'Premium y creativa', fontFamily: 'Raleway, ui-sans-serif, system-ui, sans-serif' },
+  { value: 'oswald', label: 'Oswald', description: 'Bold y condensada', fontFamily: 'Oswald, ui-sans-serif, system-ui, sans-serif' },
+]
+
+const animationOptions: { value: CardAnimation; label: string; icon: string }[] = [
+  { value: 'none', label: 'Sin animación', icon: '—' },
+  { value: 'fade', label: 'Fade in', icon: '✨' },
+  { value: 'slide-up', label: 'Slide up', icon: '↑' },
+  { value: 'zoom', label: 'Zoom in', icon: '🔍' },
+  { value: 'bounce', label: 'Bounce', icon: '⬆' },
+  { value: 'glow', label: 'Glow', icon: '💡' },
+  { value: 'float', label: 'Float', icon: '🌊' },
 ]
 
 const colorFieldLabels: { key: keyof CardCustomColors; label: string }[] = [
@@ -135,11 +156,19 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
     email: initialData?.email || '',
     website: initialData?.website || '',
     fotoUrl: initialData?.fotoUrl || '',
+    logoUrl: initialData?.logoUrl || '',
+    headerBanner: initialData?.headerBanner || '',
     pin: '',
     diseño: (initialData as typeof initialData & { diseño?: CardFormData['diseño'] })?.diseño || 'clasico',
     tagline: initialData?.tagline || '',
     customFont: initialData?.customFont || 'inter',
+    animation: initialData?.animation || 'none',
+    backgroundType: initialData?.backgroundType || 'solid',
+    backgroundImage: initialData?.backgroundImage || '',
+    customGradient: initialData?.customGradient || '',
     customColors: initialData?.customColors ? { ...initialData.customColors } : undefined,
+    customCss: initialData?.customCss || '',
+    customHtml: initialData?.customHtml || '',
     servicios: (initialData as typeof initialData & { servicios?: CardFormData['servicios'] })?.servicios || [{ name: '', price: '' }],
     horario: (initialData as typeof initialData & { horario?: string })?.horario || '',
     direccion: (initialData as typeof initialData & { direccion?: string })?.direccion || '',
@@ -259,6 +288,10 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
       servicios: formData.servicios
         .map((service) => ({ name: service.name.trim(), price: service.price.trim() }))
         .filter((service) => service.name || service.price),
+      customCss: formData.customCss.trim(),
+      customHtml: formData.customHtml.trim(),
+      logoUrl: formData.logoUrl.trim(),
+      headerBanner: formData.headerBanner.trim(),
     }
 
     try {
@@ -352,6 +385,33 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
             onChange={(url) => setFormData((prev) => ({ ...prev, fotoUrl: url }))}
             disabled={loading}
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Logo (URL)</label>
+          <input
+            type="url"
+            name="logoUrl"
+            value={formData.logoUrl}
+            onChange={handleChange}
+            className={inputClass}
+            placeholder="https://mi-empresa.com/logo.png"
+          />
+          <p className="mt-1 text-xs text-slate-500">Se muestra encima de la tarjeta</p>
+        </div>
+        <div>
+          <label className={labelClass}>Banner de encabezado (URL)</label>
+          <input
+            type="url"
+            name="headerBanner"
+            value={formData.headerBanner}
+            onChange={handleChange}
+            className={inputClass}
+            placeholder="https://mi-empresa.com/banner.jpg"
+          />
+          <p className="mt-1 text-xs text-slate-500">Imagen decorativa en la parte superior</p>
         </div>
       </div>
 
@@ -514,6 +574,121 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Animation picker */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+            <div>
+              <label className={labelClass}>✨ Animación de entrada</label>
+              <p className="text-xs text-slate-500 mb-3">Efecto al cargar la tarjeta</p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {animationOptions.map((anim) => {
+                  const active = formData.animation === anim.value
+                  return (
+                    <button
+                      key={anim.value}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, animation: anim.value }))}
+                      className={`rounded-xl border px-3 py-3 text-center text-xs font-medium transition ${active ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-700 hover:border-indigo-300'}`}
+                    >
+                      <div className="text-base mb-1">{anim.icon}</div>
+                      {anim.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Background section */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-4">
+            <div>
+              <label className={labelClass}>🖼 Fondo de tarjeta</label>
+              <p className="text-xs text-slate-500 mb-3">Tipo de fondo para la tarjeta</p>
+              <div className="grid grid-cols-3 gap-2">
+                {(['solid', 'gradient', 'image'] as CardBackgroundType[]).map((type) => {
+                  const active = formData.backgroundType === type
+                  const labels = { solid: 'Color sólido', gradient: 'Gradiente', image: 'Imagen' }
+                  const icons = { solid: '🎨', gradient: '🌈', image: '🖼' }
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, backgroundType: type }))}
+                      className={`rounded-xl border px-3 py-3 text-center text-xs font-medium transition ${active ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-700 hover:border-indigo-300'}`}
+                    >
+                      <div className="text-base mb-1">{icons[type]}</div>
+                      {labels[type]}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {formData.backgroundType === 'image' && (
+              <div>
+                <label className={labelClass}>URL de imagen de fondo</label>
+                <input
+                  type="url"
+                  name="backgroundImage"
+                  value={formData.backgroundImage}
+                  onChange={handleChange}
+                  className={inputClass}
+                  placeholder="https://images.unsplash.com/photo-..."
+                />
+                <p className="mt-1 text-xs text-slate-500">Se añade un overlay oscuro automático para mantener legibilidad</p>
+              </div>
+            )}
+
+            {formData.backgroundType === 'gradient' && (
+              <div>
+                <label className={labelClass}>CSS de gradiente</label>
+                <input
+                  type="text"
+                  name="customGradient"
+                  value={formData.customGradient}
+                  onChange={handleChange}
+                  className={`${inputClass} font-mono text-xs`}
+                  placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                />
+                <p className="mt-1 text-xs text-slate-500">Valor CSS válido de background (linear-gradient, radial-gradient)</p>
+              </div>
+            )}
+          </div>
+
+          {/* Custom CSS */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+            <div>
+              <label className={labelClass}>🎨 CSS personalizado</label>
+              <p className="text-xs text-slate-500 mb-2">Inyecta estilos avanzados directamente. Los selectores aplican a toda la página de la tarjeta.</p>
+              <textarea
+                name="customCss"
+                value={formData.customCss}
+                onChange={handleChange}
+                rows={6}
+                className={`${inputClass} min-h-[140px] resize-y font-mono text-xs`}
+                placeholder={`.card-mi-nombre {\n  border: 2px solid gold;\n}\n\n.card-mi-nombre h2 {\n  letter-spacing: 0.1em;\n}`}
+                spellCheck={false}
+              />
+            </div>
+          </div>
+
+          {/* Custom HTML */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+            <div>
+              <label className={labelClass}>📄 Bloque HTML personalizado</label>
+              <p className="text-xs text-slate-500 mb-2">Se renderiza debajo de la tarjeta. Útil para añadir contenido extra, embeds o CTAs avanzados.</p>
+              <textarea
+                name="customHtml"
+                value={formData.customHtml}
+                onChange={handleChange}
+                rows={6}
+                className={`${inputClass} min-h-[140px] resize-y font-mono text-xs`}
+                placeholder={`<div style="text-align:center;padding:16px;">\n  <a href="https://..." style="color:#6366f1">Ver portafolio →</a>\n</div>`}
+                spellCheck={false}
+              />
+              <p className="mt-1.5 text-xs text-amber-600 font-medium">⚠ Solo usa HTML de confianza. No insertes scripts externos.</p>
             </div>
           </div>
 

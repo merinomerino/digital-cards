@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Poppins, Raleway, Oswald } from 'next/font/google'
 import Script from 'next/script'
 import Footer from '@/components/Footer'
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-poppins' })
+const raleway = Raleway({ subsets: ['latin'], variable: '--font-raleway' })
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald' })
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cardlink.mx'
 
@@ -67,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         )}
       </head>
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
+      <body className={`${inter.variable} ${poppins.variable} ${raleway.variable} ${oswald.variable} ${inter.className} flex flex-col min-h-screen`}>
         <ServiceWorkerRegistrar />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -8,7 +8,11 @@ export type CardCustomColors = {
   text: string
 }
 
-export type CardFont = 'inter' | 'playfair' | 'mono' | 'montserrat'
+export type CardFont = 'inter' | 'playfair' | 'mono' | 'montserrat' | 'poppins' | 'raleway' | 'oswald'
+
+export type CardAnimation = 'none' | 'fade' | 'slide-up' | 'zoom' | 'bounce' | 'glow' | 'float'
+
+export type CardBackgroundType = 'solid' | 'gradient' | 'image'
 
 export interface Card {
   id: string;
@@ -21,10 +25,18 @@ export interface Card {
   email: string;
   website: string;
   fotoUrl: string;
+  logoUrl?: string;
+  headerBanner?: string;
   diseño?: CardDesign;
   tagline?: string;
   customColors?: CardCustomColors;
   customFont?: CardFont;
+  animation?: CardAnimation;
+  backgroundType?: CardBackgroundType;
+  backgroundImage?: string;
+  customGradient?: string;
+  customCss?: string;
+  customHtml?: string;
   servicios?: { name: string; price: string }[];
   horario?: string;
   direccion?: string;
