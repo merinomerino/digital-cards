@@ -137,7 +137,7 @@ export default function CardPage({ params }: Props) {
   const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cardlink.mx'}/${slug}`
 
   return (
-    <div className="min-h-screen bg-mts-bg pt-5 px-4 pb-12">
+    <div className="min-h-screen bg-mts-bg pt-5 px-4 pb-24">
       <div className="max-w-sm mx-auto space-y-4">
         <AdBanner
           slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP || 'SLOT_TOP'}
@@ -145,13 +145,6 @@ export default function CardPage({ params }: Props) {
           className="rounded-xl overflow-hidden"
         />
         <DesignCardPreview card={card} />
-
-        <div className="bg-mts-surface/60 border border-mts-border/50 rounded-2xl p-4">
-          <p className="text-mts-muted text-xs text-center mb-3 font-semibold uppercase tracking-wider">
-            Compartir
-          </p>
-          <ShareButton url={cardUrl} name={card.nombre} title={card.tituloProfesional} />
-        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <QRCodeDisplay url={cardUrl} slug={slug} />
@@ -173,19 +166,10 @@ export default function CardPage({ params }: Props) {
             </Link>
           </div>
         </div>
-
-        <Link
-          href="https://wa.me/5218787020221?text=Hola,%20quiero%20una%20tarjeta%20digital%20personalizada%20para%20mi%20negocio"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block glass rounded-2xl p-5 border border-mts-border/50 text-center hover:bg-white/[0.03] transition-colors group"
-        >
-          <p className="text-xs text-mts-muted mb-1">¿Quieres una tarjeta digital para tu negocio?</p>
-          <p className="text-sm text-indigo-400 font-semibold group-hover:text-indigo-300 transition-colors">
-            Conoce CardLink → <span className="text-mts-muted text-xs font-normal">cardlink.mx</span>
-          </p>
-        </Link>
       </div>
+
+      {/* FAB flotante de compartir */}
+      <ShareButton url={cardUrl} name={card.nombre} title={card.tituloProfesional} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 interface QRCodeDisplayProps {
@@ -10,7 +10,13 @@ interface QRCodeDisplayProps {
 
 export default function QRCodeDisplay({ url, slug }: QRCodeDisplayProps) {
   const [downloaded, setDownloaded] = useState(false)
+  // Usa la URL real del navegador en runtime (ignora la var de entorno)
+  const [cardUrl, setCardUrl] = useState(url)
   const qrRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setCardUrl(`${window.location.origin}/${slug}`)
+  }, [slug])
 
   const downloadQR = () => {
     const svg = qrRef.current?.querySelector('svg')
@@ -53,7 +59,7 @@ export default function QRCodeDisplay({ url, slug }: QRCodeDisplayProps) {
         className="bg-white rounded-2xl p-4 shadow-lg"
       >
         <QRCodeSVG
-          value={url}
+          value={cardUrl}
           size={180}
           bgColor="#ffffff"
           fgColor="#0f172a"

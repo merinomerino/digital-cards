@@ -217,10 +217,6 @@ function ClassicCard({ card }: { card: Card }) {
           </div>
         )}
 
-        <Link href="/" className="flex items-center justify-center gap-1.5 pt-1 text-xs text-mts-muted transition-colors hover:text-white">
-          <span className="h-2 w-2 rounded-full" style={{ background: palette.primary }} />
-          Creado con <span style={{ color: palette.primary }} className="font-semibold">CardLink</span>
-        </Link>
       </div>
     </div>
   )
@@ -448,9 +444,6 @@ function TravelCard({ card }: { card: Card }) {
           </div>
         )}
 
-        <div className="rounded-2xl px-4 py-3 text-center" style={{ borderTop: `1px dashed ${palette.primary}33`, color: `${palette.primary}` }}>
-          <p className="text-[11px] uppercase tracking-[0.3em]">CardLink · cardlink.mx/{card.slug}</p>
-        </div>
       </div>
     </div>
   )

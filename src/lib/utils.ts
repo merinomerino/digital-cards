@@ -20,6 +20,16 @@ export function formatPhone(phone: string): string {
   return `https://wa.me/${cleaned}`;
 }
 
+/**
+ * Genera URL de WhatsApp con mensaje prellenado indicando que el contacto
+ * vio la tarjeta digital, para que el dueño sepa de dónde viene el lead.
+ */
+export function getWhatsAppUrl(phone: string, nombre: string): string {
+  const cleaned = phone.replace(/[^\d]/g, '');
+  const msg = encodeURIComponent(`Hola ${nombre}, vi tu tarjeta digital 👋`);
+  return `https://wa.me/${cleaned}?text=${msg}`;
+}
+
 export function getSocialIcon(network: string): string {
   const icons: Record<string, string> = {
     linkedin: '💼',

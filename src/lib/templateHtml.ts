@@ -223,11 +223,7 @@ function getClasicaTemplateHtml(p: ReturnType<typeof getPalette>): string {
       {{#tiktokUrl}}<a href="{{tiktokUrl}}" target="_blank" style="display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px 16px;background:${p.accent};text-decoration:none;color:#fff;font-size:14px;font-weight:500;">TikTok</a>{{/tiktokUrl}}
     </div>
 
-    <!-- Footer -->
-    <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.35);margin:0;">
-      Creado con <span style="color:${p.primary};font-weight:600;">CardLink</span>
-    </p>
-  </div>
+    </div>
 </div>`
 }
 
@@ -558,10 +554,6 @@ function getTravelTemplateHtml(p: ReturnType<typeof getPalette>): string {
     </div>
     {{/horario}}
 
-    <!-- Footer -->
-    <p style="text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:${p.primary};margin:0;">
-      CardLink · cardlink.mx/{{slug}}
-    </p>
   </div>
 </div>`
 }
