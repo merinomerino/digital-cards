@@ -63,15 +63,6 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/sw.js',
-        destination: '/sw.js',
-      },
-    ]
-  },
-
   poweredByHeader: false,
   reactStrictMode: true,
   compress: true,
