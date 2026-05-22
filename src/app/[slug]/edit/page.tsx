@@ -53,10 +53,13 @@ export default function EditPage({ params }: Props) {
         servicios: data.servicios,
         horario: data.horario,
         redesSociales: data.redesSociales,
+        direccion: data.direccion || undefined,
+        googleMapsUrl: data.googleMapsUrl || undefined,
       })
       toast.success('¡Tarjeta actualizada!')
       router.push(`/${slug}`)
-    } catch {
+    } catch (err) {
+      console.error('updateCard error:', err)
       toast.error('Error al actualizar. Intenta de nuevo.')
     }
   }

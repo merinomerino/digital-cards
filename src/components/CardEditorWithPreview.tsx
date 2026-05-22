@@ -112,36 +112,38 @@ export default function CardEditorWithPreview({ initialData, onSubmit, isEditing
 
         {/* Right: sticky live preview (desktop) */}
         <div className="hidden lg:block">
-          <div className="sticky top-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <p className="text-sm font-medium text-mts-muted">Vista previa en tiempo real</p>
-            </div>
+          <div className="sticky top-6" style={{ maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', scrollbarWidth: 'none' }}>
+            <div className="space-y-3 pb-6">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <p className="text-sm font-medium text-mts-muted">Vista previa en tiempo real</p>
+              </div>
 
-            {/* Phone frame */}
-            <div className="mx-auto max-w-[340px]">
-              <div className="rounded-[44px] border-[6px] border-slate-700 bg-mts-bg shadow-2xl overflow-hidden">
-                {/* Notch */}
-                <div className="h-6 bg-slate-700 flex items-center justify-center flex-shrink-0">
-                  <div className="w-16 h-1.5 rounded-full bg-slate-600" />
-                </div>
-                {/* Scrollable card area */}
-                <div
-                  className="overflow-y-auto bg-mts-bg"
-                  style={{ maxHeight: '640px', scrollbarWidth: 'none' }}
-                >
-                  <div className="p-3">
-                    <DesignCardPreview card={previewCard} />
+              {/* Phone frame */}
+              <div className="mx-auto max-w-[340px]">
+                <div className="rounded-[44px] border-[6px] border-slate-700 bg-mts-bg shadow-2xl overflow-hidden">
+                  {/* Notch */}
+                  <div className="h-6 bg-slate-700 flex items-center justify-center flex-shrink-0">
+                    <div className="w-16 h-1.5 rounded-full bg-slate-600" />
+                  </div>
+                  {/* Scrollable card area */}
+                  <div
+                    className="overflow-y-auto bg-mts-bg"
+                    style={{ maxHeight: '72vh', scrollbarWidth: 'none' }}
+                  >
+                    <div className="p-3">
+                      <DesignCardPreview card={previewCard} />
+                    </div>
+                  </div>
+                  {/* Home bar */}
+                  <div className="h-5 bg-slate-700 flex items-end justify-center pb-1.5 flex-shrink-0">
+                    <div className="w-24 h-1 rounded-full bg-slate-500" />
                   </div>
                 </div>
-                {/* Home bar */}
-                <div className="h-5 bg-slate-700 flex items-end justify-center pb-1.5 flex-shrink-0">
-                  <div className="w-24 h-1 rounded-full bg-slate-500" />
-                </div>
               </div>
-            </div>
 
-            <p className="text-center text-xs text-mts-muted">Los cambios se reflejan al instante</p>
+              <p className="text-center text-xs text-mts-muted">Los cambios se reflejan al instante</p>
+            </div>
           </div>
         </div>
       </div>

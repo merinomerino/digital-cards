@@ -117,7 +117,15 @@ export async function createCard(
 export async function updateCard(id: string, data: Partial<Card>): Promise<void> {
   checkAvailable()
   const docRef = doc(db!, COLLECTION, id)
-  await updateDoc(docRef, { ...data, updatedAt: Timestamp.now() })
+
+  // Firestore lanza error con valores undefined — los convertimos a deleteField()
+  const { deleteField } = await import('firebase/firestore')
+  const cleanData: Record<string, unknown> = { updatedAt: Timestamp.now() }
+  for (const [k, v] of Object.entries(data)) {
+    cleanData[k] = v === undefined ? deleteField() : v
+  }
+
+  await updateDoc(docRef, cleanData)
 }
 
 export async function getAllCards(): Promise<Card[]> {
