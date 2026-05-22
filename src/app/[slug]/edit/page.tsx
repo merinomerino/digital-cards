@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
 import PinModal from '@/components/PinModal'
-import CardForm, { CardFormData } from '@/components/CardForm'
+import CardEditorWithPreview from '@/components/CardEditorWithPreview'
+import { CardFormData } from '@/components/CardForm'
 import { getCardBySlug, updateCard } from '@/lib/firestore'
 import { Card } from '@/types/card'
 
@@ -80,7 +81,7 @@ export default function EditPage({ params }: Props) {
       />
 
       {pinVerified && card && (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">Editar tarjeta</h1>
             <button
@@ -91,7 +92,7 @@ export default function EditPage({ params }: Props) {
             </button>
           </div>
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-10">
-            <CardForm initialData={card} onSubmit={handleUpdate} isEditing />
+            <CardEditorWithPreview initialData={card} onSubmit={handleUpdate} isEditing />
           </div>
         </div>
       )}

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
-import CardForm, { CardFormData } from '@/components/CardForm'
+import CardEditorWithPreview from '@/components/CardEditorWithPreview'
+import { CardFormData } from '@/components/CardForm'
 import { getCardById, updateCard, DatabaseError } from '@/lib/firestore'
 import { Card } from '@/types/card'
 
@@ -67,7 +68,7 @@ export default function AdminEditCardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -94,7 +95,7 @@ export default function AdminEditCardPage() {
         <div className="flex items-center justify-center py-20 text-mts-muted">Cargando tarjeta…</div>
       ) : card ? (
         <div className="rounded-[28px] border border-white/5 bg-white p-6 shadow-2xl sm:p-8">
-          <CardForm onSubmit={handleSubmit} initialData={card} isEditing />
+          <CardEditorWithPreview onSubmit={handleSubmit} initialData={card} isEditing />
         </div>
       ) : null}
     </div>

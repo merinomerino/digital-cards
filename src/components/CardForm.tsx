@@ -47,6 +47,7 @@ type Props = {
   initialData?: Partial<Card>
   onSubmit: (data: CardFormData) => Promise<void>
   isEditing?: boolean
+  onPreviewChange?: (data: CardFormData) => void
 }
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
@@ -146,7 +147,7 @@ function getColorPickerValue(value: string, fallback: string): string {
   return fallback
 }
 
-export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
+export default function CardForm({ initialData, onSubmit, isEditing, onPreviewChange }: Props) {
   const [formData, setFormData] = useState<CardFormData>({
     slug: initialData?.slug || '',
     nombre: initialData?.nombre || '',
@@ -276,6 +277,10 @@ export default function CardForm({ initialData, onSubmit, isEditing }: Props) {
       return () => clearTimeout(timer)
     }
   }, [formData.slug, isEditing, checkSlug])
+
+  useEffect(() => {
+    onPreviewChange?.(formData)
+  }, [formData, onPreviewChange])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

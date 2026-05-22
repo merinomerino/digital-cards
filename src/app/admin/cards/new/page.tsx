@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
-import CardForm, { CardFormData } from '@/components/CardForm'
+import CardEditorWithPreview from '@/components/CardEditorWithPreview'
+import { CardFormData } from '@/components/CardForm'
 import { createCard, DatabaseError } from '@/lib/firestore'
 import { hashPin } from '@/lib/utils'
 
@@ -50,7 +51,7 @@ export default function AdminNewCardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -69,13 +70,14 @@ export default function AdminNewCardPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">Nueva tarjeta</h1>
-          <p className="mt-1 text-sm text-mts-muted">Crea una tarjeta manual desde el panel admin con branding, PIN y diseño personalizado.</p>
+          <p className="mt-1 text-sm text-mts-muted">Crea una tarjeta con vista previa en tiempo real.</p>
         </div>
       </div>
 
       <div className="rounded-[28px] border border-white/5 bg-white p-6 shadow-2xl sm:p-8">
-        <CardForm onSubmit={handleSubmit} />
+        <CardEditorWithPreview onSubmit={handleSubmit} />
       </div>
     </div>
   )
 }
+
