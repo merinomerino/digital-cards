@@ -5,7 +5,7 @@
  */
 
 import type { Card } from '@/types/card'
-import { getSocialUrl } from './utils'
+import { getSocialUrl, getWhatsAppUrl } from './utils'
 import { getTemplate } from './templates/registry'
 
 const FALLBACK_COLORS = {
@@ -69,7 +69,7 @@ function buildVarMap(card: Card): Record<string, string> {
     linkedinUrl: socials.linkedin ? getSocialUrl('linkedin', socials.linkedin) : '',
     instagramUrl: socials.instagram ? getSocialUrl('instagram', socials.instagram) : '',
     twitterUrl: socials.twitter ? getSocialUrl('twitter', socials.twitter) : '',
-    whatsappUrl: socials.whatsapp ? getSocialUrl('whatsapp', socials.whatsapp) : '',
+    whatsappUrl: socials.whatsapp ? getWhatsAppUrl(socials.whatsapp, card.nombre) : '',
     githubUrl: socials.github ? getSocialUrl('github', socials.github) : '',
     tiktokUrl: socials.tiktok ? getSocialUrl('tiktok', socials.tiktok) : '',
     serviciosHtml: buildServiciosHtml(card),

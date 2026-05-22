@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import type { CSSProperties } from 'react'
 import { Card, CardCustomColors, SocialNetwork } from '@/types/card'
-import { getSocialUrl } from '@/lib/utils'
+import { getSocialUrl, getWhatsAppUrl } from '@/lib/utils'
 import { getTemplate } from '@/lib/templates/registry'
 import { isTemplateHtml, renderTemplateVars } from '@/lib/templateHtml'
 
@@ -96,7 +96,7 @@ function getWebsiteHref(website: string): string {
 
 function getCtaHref(card: Card): string {
   if (card.redesSociales.whatsapp) {
-    return getSocialUrl('whatsapp', card.redesSociales.whatsapp)
+    return getWhatsAppUrl(card.redesSociales.whatsapp, card.nombre)
   }
 
   if (card.redesSociales.instagram) {
@@ -206,7 +206,7 @@ function ClassicCard({ card }: { card: Card }) {
               {activeSocials.map(({ key, label }) => {
                 const value = card.redesSociales[key]
                 return (
-                  <a key={key} href={getSocialUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 transition-colors" style={{ background: `${palette.accent}` }}>
+                  <a key={key} href={key === 'whatsapp' ? getWhatsAppUrl(value, card.nombre) : getSocialUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 transition-colors" style={{ background: `${palette.accent}` }}>
                     <SocialIcon network={key} color={palette.primary} />
                     <span className="text-xs font-medium text-mts-muted">{label}</span>
                   </a>
@@ -230,7 +230,7 @@ function TattooCard({ card }: { card: Card }) {
     { name: 'Cover up', price: '$1,500' },
   ]
   const buttons = [
-    { title: 'WhatsApp', subtitle: 'Agenda tu sesión', href: card.redesSociales.whatsapp ? getSocialUrl('whatsapp', card.redesSociales.whatsapp) : undefined, icon: '⚡' },
+    { title: 'WhatsApp', subtitle: 'Agenda tu sesión', href: card.redesSociales.whatsapp ? getWhatsAppUrl(card.redesSociales.whatsapp, card.nombre) : undefined, icon: '⚡' },
     { title: 'Instagram', subtitle: 'Trabajos recientes', href: card.redesSociales.instagram ? getSocialUrl('instagram', card.redesSociales.instagram) : undefined, icon: '📸' },
     { title: 'Teléfono', subtitle: 'Llama ahora', href: card.telefono ? `tel:${card.telefono}` : undefined, icon: '📞' },
     { title: 'Website', subtitle: 'Conoce el estudio', href: card.website ? getWebsiteHref(card.website) : undefined, icon: '↗' },
@@ -324,7 +324,7 @@ function VetCard({ card }: { card: Card }) {
     { name: 'Cirugía menor', price: '$1,200' },
   ]
   const contactActions = [
-    { title: 'WhatsApp', subtitle: 'Agenda tu cita', href: card.redesSociales.whatsapp ? getSocialUrl('whatsapp', card.redesSociales.whatsapp) : undefined, icon: '💬' },
+    { title: 'WhatsApp', subtitle: 'Agenda tu cita', href: card.redesSociales.whatsapp ? getWhatsAppUrl(card.redesSociales.whatsapp, card.nombre) : undefined, icon: '💬' },
     { title: 'Teléfono', subtitle: 'Urgencias y consultas', href: card.telefono ? `tel:${card.telefono}` : undefined, icon: '📞' },
     { title: 'Instagram', subtitle: 'Historias y pacientes', href: card.redesSociales.instagram ? getSocialUrl('instagram', card.redesSociales.instagram) : undefined, icon: '📸' },
     { title: 'Cómo llegar', subtitle: card.direccion || 'Google Maps', href: card.googleMapsUrl || undefined, icon: '📍' },
