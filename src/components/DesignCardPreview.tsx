@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { Card, CardCustomColors, SocialNetwork } from '@/types/card'
 import { getSocialUrl } from '@/lib/utils'
