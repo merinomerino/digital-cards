@@ -153,14 +153,14 @@ function getClasicaTemplateHtml(p: ReturnType<typeof getPalette>): string {
         {{initials}}
       </div>
       {{/fotoUrl}}
-      <div style="min-width:0;">
-        <h1 style="margin:0;font-size:20px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{nombre}}</h1>
-        <p style="margin:2px 0 0;font-size:14px;font-weight:500;color:${p.primary};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{tituloProfesional}}</p>
+      <div style="min-width:0;flex:1;overflow:hidden;">
+        <h1 style="margin:0;font-size:20px;font-weight:700;color:#fff;word-break:break-word;overflow-wrap:break-word;line-height:1.25;">{{nombre}}</h1>
+        <p style="margin:2px 0 0;font-size:14px;font-weight:500;color:${p.primary};word-break:break-word;overflow-wrap:break-word;">{{tituloProfesional}}</p>
         {{#tagline}}
-        <p style="margin:4px 0 0;font-size:13px;font-style:italic;color:${p.text};">{{tagline}}</p>
+        <p style="margin:4px 0 0;font-size:13px;font-style:italic;color:${p.text};word-break:break-word;">{{tagline}}</p>
         {{/tagline}}
         {{#empresa}}
-        <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{empresa}}</p>
+        <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.5);word-break:break-word;">{{empresa}}</p>
         {{/empresa}}
       </div>
     </div>
@@ -199,7 +199,7 @@ function getClasicaTemplateHtml(p: ReturnType<typeof getPalette>): string {
         <span style="width:40px;height:40px;border-radius:12px;background:${p.primary}22;color:${p.primary};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📍</span>
         <div>
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5);">Cómo llegar</p>
-          <p style="margin:2px 0 0;font-size:14px;font-weight:500;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{direccion}}</p>
+          <p style="margin:2px 0 0;font-size:14px;font-weight:500;color:#fff;word-break:break-word;overflow-wrap:break-word;">{{direccion}}</p>
         </div>
       </a>
       {{/googleMapsUrl}}
@@ -396,8 +396,8 @@ function getVetTemplateHtml(p: ReturnType<typeof getPalette>): string {
         <span style="font-size:24px;font-weight:700;color:${p.primary};">{{initials}}</span>
         {{/fotoUrl}}
       </div>
-      <div style="min-width:0;">
-        <h2 style="margin:0;font-size:24px;font-weight:700;color:#fff;">{{nombre}}</h2>
+      <div style="min-width:0;flex:1;overflow:hidden;">
+        <h2 style="margin:0;font-size:24px;font-weight:700;color:#fff;word-break:break-word;overflow-wrap:break-word;">{{nombre}}</h2>
         <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:${p.primary};">{{tituloProfesional}}</p>
         {{#tagline}}
         <p style="margin:12px 0 0;font-size:13px;font-style:italic;color:${p.text};">🐾 {{tagline}}</p>
@@ -493,9 +493,9 @@ function getTravelTemplateHtml(p: ReturnType<typeof getPalette>): string {
           <span style="font-size:20px;font-weight:700;color:${p.primary};">{{initials}}</span>
           {{/fotoUrl}}
         </div>
-        <div style="min-width:0;">
+        <div style="min-width:0;flex:1;overflow:hidden;">
           <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.35em;color:${p.primary};">Travel concierge</p>
-          <h2 style="margin:4px 0 0;font-size:24px;font-weight:700;color:#fff;">{{nombre}}</h2>
+          <h2 style="margin:4px 0 0;font-size:24px;font-weight:700;color:#fff;word-break:break-word;overflow-wrap:break-word;">{{nombre}}</h2>
           <p style="margin:2px 0 0;font-size:14px;font-weight:500;color:${p.text};">{{tituloProfesional}}</p>
         </div>
       </div>
