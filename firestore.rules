@@ -33,8 +33,8 @@ service cloud.firestore {
       allow update: if request.resource.data.slug == resource.data.slug  // slug inmutable
         && request.resource.data.pinHash == resource.data.pinHash;        // PIN inmutable
 
-      // Nunca se permite borrar
-      allow delete: if false;
+      // Eliminar: solo admins autenticados vía Firebase Auth
+      allow delete: if request.auth != null;
     }
 
     // Colección de usuarios (admins y clientes de CardLink)
