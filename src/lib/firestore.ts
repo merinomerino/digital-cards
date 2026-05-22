@@ -6,6 +6,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   Timestamp,
@@ -143,9 +144,17 @@ export async function getAllCards(): Promise<Card[]> {
 
 export async function deleteCard(id: string): Promise<void> {
   checkAvailable()
-  const { doc, deleteDoc } = await import('firebase/firestore')
-  const docRef = doc(db!, COLLECTION, id)
-  await deleteDoc(docRef)
+  // Obtener slug antes de borrar para limpiar Storage
+  const cardSnap = await getDoc(doc(db!, COLLECTION, id))
+  const slug = cardSnap.exists() ? (cardSnap.data().slug as string | undefined) : undefined
+
+  await deleteDoc(doc(db!, COLLECTION, id))
+
+  // Limpiar archivos huérfanos en Storage
+  if (slug) {
+    const { deleteCardStorage } = await import('./storage')
+    await deleteCardStorage(slug)
+  }
 }
 
 export async function slugExists(slug: string): Promise<boolean> {

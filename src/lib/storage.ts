@@ -38,6 +38,24 @@ export async function uploadProfilePhoto(
   })
 }
 
+/** Elimina todos los archivos de Storage asociados a una tarjeta por slug */
+export async function deleteCardStorage(slug: string): Promise<void> {
+  if (!firebaseAvailable || !storage) return
+  const paths = [
+    `cards/${slug}/profile.jpg`,
+    `cards/${slug}/profile.png`,
+    `cards/${slug}/logo.jpg`,
+    `cards/${slug}/logo.png`,
+    `cards/${slug}/banner.jpg`,
+    `cards/${slug}/banner.png`,
+    `cards/${slug}/bg.jpg`,
+    `cards/${slug}/bg.png`,
+  ]
+  await Promise.allSettled(
+    paths.map((path) => deleteObject(ref(storage!, path)).catch(() => { /* archivo no existe → ok */ }))
+  )
+}
+
 export async function deleteProfilePhoto(slug: string): Promise<void> {
   if (!firebaseAvailable || !storage) return
   for (const ext of ['jpg', 'png']) {

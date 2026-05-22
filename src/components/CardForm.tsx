@@ -6,6 +6,7 @@ import { toSlug } from '@/lib/utils'
 import { slugExists } from '@/lib/firestore'
 import { getTemplate } from '@/lib/templates/registry'
 import PhotoUpload from '@/components/PhotoUpload'
+import { getStarterCss, getStarterHtml } from '@/lib/cardStarters'
 
 export type CardFormData = {
   slug: string
@@ -168,8 +169,8 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
     backgroundImage: initialData?.backgroundImage || '',
     customGradient: initialData?.customGradient || '',
     customColors: initialData?.customColors ? { ...initialData.customColors } : undefined,
-    customCss: initialData?.customCss || '',
-    customHtml: initialData?.customHtml || '',
+    customCss: initialData?.customCss || (initialData?.slug ? getStarterCss(initialData) : ''),
+    customHtml: initialData?.customHtml || (initialData?.slug ? getStarterHtml(initialData) : ''),
     servicios: (initialData as typeof initialData & { servicios?: CardFormData['servicios'] })?.servicios || [{ name: '', price: '' }],
     horario: (initialData as typeof initialData & { horario?: string })?.horario || '',
     direccion: (initialData as typeof initialData & { direccion?: string })?.direccion || '',
@@ -306,7 +307,7 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
     }
   }
 
-  const inputClass = 'w-full px-3 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-mts-primary focus:border-transparent text-sm bg-white'
+  const inputClass = 'w-full px-3 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-mts-primary focus:border-transparent text-sm bg-white text-slate-900 placeholder:text-slate-400'
   const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5'
 
   const appDomain =
@@ -332,7 +333,7 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
               name="slug"
               value={formData.slug}
               onChange={handleChange}
-              className="flex-1 px-3 py-3 text-sm outline-none bg-white min-w-0"
+              className="flex-1 px-3 py-3 text-sm outline-none bg-white min-w-0 text-slate-900 placeholder:text-slate-400"
               placeholder="juan-perez"
             />
             <div className="pr-3">
