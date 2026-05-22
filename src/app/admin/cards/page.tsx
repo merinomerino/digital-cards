@@ -27,8 +27,9 @@ export default function AdminCards() {
       await deleteCard(card.id)
       setCards((prev) => prev.filter((item) => item.id !== card.id))
       toast.success('Tarjeta eliminada')
-    } catch {
-      toast.error('Error al eliminar')
+    } catch (err) {
+      console.error('deleteCard error:', err)
+      toast.error('Error al eliminar la tarjeta')
     }
   }
 
