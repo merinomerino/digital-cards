@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react'
 import { Card, CardCustomColors, SocialNetwork } from '@/types/card'
 import { getSocialUrl } from '@/lib/utils'
 import { getTemplate } from '@/lib/templates/registry'
+import { isTemplateHtml, renderTemplateVars } from '@/lib/templateHtml'
 
 interface Props {
   card: Card
@@ -460,6 +461,32 @@ export default function DesignCardPreview({ card }: Props) {
   const animClass = ANIMATION_CLASSES[card.animation || 'none'] || ''
   const slugClass = `card-${card.slug.replace(/[^a-z0-9]/g, '-')}`
 
+  // ── Modo plantilla HTML ({{variable}} en customHtml) ──────────────────────
+  if (card.customHtml && isTemplateHtml(card.customHtml)) {
+    const rendered = renderTemplateVars(card.customHtml, card)
+    return (
+      <div className={`${slugClass} ${animClass}`.trim()}>
+        {card.customCss && (
+          <style dangerouslySetInnerHTML={{ __html: card.customCss }} />
+        )}
+        {card.headerBanner && (
+          <div className="mb-4 overflow-hidden rounded-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={card.headerBanner} alt="" className="w-full h-36 object-cover" />
+          </div>
+        )}
+        {card.logoUrl && (
+          <div className="mb-4 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={card.logoUrl} alt={card.nombre} className="max-h-14 max-w-[180px] object-contain drop-shadow-lg" />
+          </div>
+        )}
+        <div dangerouslySetInnerHTML={{ __html: rendered }} />
+      </div>
+    )
+  }
+
+  // ── Modo React normal ─────────────────────────────────────────────────────
   const cardComponent = (() => {
     switch (diseño) {
       case 'tattoo': return <TattooCard card={card} />
@@ -491,7 +518,7 @@ export default function DesignCardPreview({ card }: Props) {
 
       {cardComponent}
 
-      {card.customHtml && (
+      {card.customHtml && !isTemplateHtml(card.customHtml) && (
         <div
           className="mt-4"
           dangerouslySetInnerHTML={{ __html: card.customHtml }}

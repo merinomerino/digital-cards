@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, CardCustomColors, CardFont, CardAnimation, CardBackgroundType } from '@/types/card'
+import { Card, CardCustomColors, CardFont, CardAnimation, CardBackgroundType, CardDesign } from '@/types/card'
 import { toSlug } from '@/lib/utils'
 import { slugExists } from '@/lib/firestore'
 import { getTemplate } from '@/lib/templates/registry'
 import PhotoUpload from '@/components/PhotoUpload'
 import { getStarterCss, getStarterHtml } from '@/lib/cardStarters'
+import { getTemplateHtml } from '@/lib/templateHtml'
 
 export type CardFormData = {
   slug: string
@@ -222,6 +223,30 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
       ...prev,
       redesSociales: { ...prev.redesSociales, [key]: value },
     }))
+  }
+
+  const handleLoadTemplateHtml = () => {
+    // Construir Card mínimo a partir de formData para getTemplateHtml
+    const card = {
+      id: 'preview', slug: formData.slug || 'preview', pinHash: '',
+      nombre: formData.nombre || 'Tu nombre', tituloProfesional: formData.tituloProfesional || '',
+      empresa: formData.empresa, telefono: formData.telefono, email: formData.email,
+      website: formData.website, fotoUrl: formData.fotoUrl,
+      diseño: formData.diseño as CardDesign,
+      tagline: formData.tagline, customFont: formData.customFont,
+      customColors: formData.customColors,
+      servicios: formData.servicios.filter((s) => s.name || s.price),
+      horario: formData.horario, direccion: formData.direccion,
+      googleMapsUrl: formData.googleMapsUrl, redesSociales: formData.redesSociales,
+      views: 0, clicks: 0, whatsappClicks: 0, instagramClicks: 0, phoneClicks: 0,
+      createdAt: new Date(), updatedAt: new Date(),
+    }
+    const html = getTemplateHtml(card)
+    setFormData((prev) => ({ ...prev, customHtml: html }))
+  }
+
+  const handleClearHtml = () => {
+    setFormData((prev) => ({ ...prev, customHtml: '' }))
   }
 
   const handleServiceChange = (index: number, field: 'name' | 'price', value: string) => {
@@ -683,18 +708,44 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
           {/* Custom HTML */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
             <div>
-              <label className={labelClass}>📄 Bloque HTML personalizado</label>
-              <p className="text-xs text-slate-500 mb-2">Se renderiza debajo de la tarjeta. Útil para añadir contenido extra, embeds o CTAs avanzados.</p>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelClass}>📄 HTML personalizado</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleLoadTemplateHtml}
+                    className="flex items-center gap-1.5 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    title="Carga el HTML real de la plantilla con variables {{nombre}}, {{telefono}}, etc."
+                  >
+                    📋 Cargar plantilla HTML
+                  </button>
+                  {formData.customHtml && (
+                    <button
+                      type="button"
+                      onClick={handleClearHtml}
+                      className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors"
+                      title="Eliminar HTML personalizado y volver al diseño de la plantilla"
+                    >
+                      🗑 Limpiar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 mb-2">
+                Usa <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">&#123;&#123;nombre&#125;&#125;</span>, <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">&#123;&#123;telefono&#125;&#125;</span>, etc. para insertar datos de la tarjeta. Carga la plantilla HTML para ver todas las variables disponibles y poder editarla.
+              </p>
               <textarea
                 name="customHtml"
                 value={formData.customHtml}
                 onChange={handleChange}
-                rows={6}
-                className={`${inputClass} min-h-[140px] resize-y font-mono text-xs`}
-                placeholder={`<div style="text-align:center;padding:16px;">\n  <a href="https://..." style="color:#6366f1">Ver portafolio →</a>\n</div>`}
+                rows={10}
+                className={`${inputClass} min-h-[200px] resize-y font-mono text-xs leading-relaxed`}
+                placeholder={`<!-- Haz clic en "Cargar plantilla HTML" para editar el diseño completo con variables -->\n<!-- O escribe HTML libre: <div style="text-align:center;padding:16px;"><a href="https://..." style="color:#6366f1">Ver portafolio →</a></div> -->`}
                 spellCheck={false}
               />
-              <p className="mt-1.5 text-xs text-amber-600 font-medium">⚠ Solo usa HTML de confianza. No insertes scripts externos.</p>
+              <div className="mt-1.5 flex items-start gap-2">
+                <p className="text-xs text-amber-600 font-medium">⚠ Solo usa HTML de confianza. No insertes scripts externos.</p>
+              </div>
             </div>
           </div>
 
