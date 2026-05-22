@@ -1,6 +1,7 @@
 'use client'
 
 import ExamplePhoneMockup, { ExamplePhoneMockupData } from '@/components/ExamplePhoneMockup'
+import Footer from '@/components/Footer'
 
 const WHATSAPP = 'https://wa.me/5218787020221?text=Hola,%20quiero%20una%20tarjeta%20digital%20personalizada%20para%20mi%20negocio'
 
@@ -129,6 +130,7 @@ const STEPS = [
 
 export default function HomePage() {
   return (
+    <>
     <div className="min-h-screen bg-mts-bg">
 
       {/* ───── Navigation ───── */}
@@ -344,5 +346,7 @@ export default function HomePage() {
       </section>
 
     </div>
+    <Footer />
+    </>
   )
 }

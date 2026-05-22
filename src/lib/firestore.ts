@@ -116,16 +116,24 @@ export async function createCard(
 
 export async function updateCard(id: string, data: Partial<Card>): Promise<void> {
   checkAvailable()
-  const docRef = doc(db!, COLLECTION, id)
-
-  // Firestore lanza error con valores undefined — los convertimos a deleteField()
-  const { deleteField } = await import('firebase/firestore')
-  const cleanData: Record<string, unknown> = { updatedAt: Timestamp.now() }
-  for (const [k, v] of Object.entries(data)) {
-    cleanData[k] = v === undefined ? deleteField() : v
+  try {
+    const docRef = doc(db!, COLLECTION, id)
+    const { deleteField } = await import('firebase/firestore')
+    const cleanData: Record<string, unknown> = { updatedAt: Timestamp.now() }
+    for (const [k, v] of Object.entries(data)) {
+      cleanData[k] = v === undefined ? deleteField() : v
+    }
+    await updateDoc(docRef, cleanData)
+  } catch (err) {
+    const errorType = findErrorType(err)
+    if (errorType === 'conexion') {
+      throw new DatabaseError('No se pudo conectar a la base de datos. Verifica tu conexión.')
+    }
+    if (errorType === 'permiso') {
+      throw new DatabaseError('No tienes permiso para editar esta tarjeta.')
+    }
+    throw new DatabaseError('No se pudieron guardar los cambios. Inténtalo de nuevo.')
   }
-
-  await updateDoc(docRef, cleanData)
 }
 
 export async function getAllCards(): Promise<Card[]> {
@@ -152,16 +160,23 @@ export async function getAllCards(): Promise<Card[]> {
 
 export async function deleteCard(id: string): Promise<void> {
   checkAvailable()
-  // Obtener slug antes de borrar para limpiar Storage
-  const cardSnap = await getDoc(doc(db!, COLLECTION, id))
-  const slug = cardSnap.exists() ? (cardSnap.data().slug as string | undefined) : undefined
-
-  await deleteDoc(doc(db!, COLLECTION, id))
-
-  // Limpiar archivos huérfanos en Storage
-  if (slug) {
-    const { deleteCardStorage } = await import('./storage')
-    await deleteCardStorage(slug)
+  try {
+    const cardSnap = await getDoc(doc(db!, COLLECTION, id))
+    const slug = cardSnap.exists() ? (cardSnap.data().slug as string | undefined) : undefined
+    await deleteDoc(doc(db!, COLLECTION, id))
+    if (slug) {
+      const { deleteCardStorage } = await import('./storage')
+      await deleteCardStorage(slug)
+    }
+  } catch (err) {
+    const errorType = findErrorType(err)
+    if (errorType === 'conexion') {
+      throw new DatabaseError('No se pudo conectar a la base de datos. Verifica tu conexión.')
+    }
+    if (errorType === 'permiso') {
+      throw new DatabaseError('No tienes permiso para eliminar esta tarjeta.')
+    }
+    throw new DatabaseError('No se pudo eliminar la tarjeta. Inténtalo de nuevo.')
   }
 }
 

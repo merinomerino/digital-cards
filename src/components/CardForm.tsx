@@ -170,8 +170,8 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
     backgroundImage: initialData?.backgroundImage || '',
     customGradient: initialData?.customGradient || '',
     customColors: initialData?.customColors ? { ...initialData.customColors } : undefined,
-    customCss: initialData?.customCss || (initialData?.slug ? getStarterCss(initialData) : ''),
-    customHtml: initialData?.customHtml || (initialData?.slug ? getStarterHtml(initialData) : ''),
+    customCss: initialData?.customCss || (initialData?.slug ? '' : getStarterCss(initialData ?? {})),
+    customHtml: initialData?.customHtml || (initialData?.slug ? '' : getStarterHtml(initialData ?? {})),
     servicios: (initialData as typeof initialData & { servicios?: CardFormData['servicios'] })?.servicios || [{ name: '', price: '' }],
     horario: (initialData as typeof initialData & { horario?: string })?.horario || '',
     direccion: (initialData as typeof initialData & { direccion?: string })?.direccion || '',
@@ -731,16 +731,55 @@ export default function CardForm({ initialData, onSubmit, isEditing, onPreviewCh
                   )}
                 </div>
               </div>
-              <p className="text-xs text-slate-500 mb-2">
-                Usa <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">&#123;&#123;nombre&#125;&#125;</span>, <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">&#123;&#123;telefono&#125;&#125;</span>, etc. para insertar datos de la tarjeta. Carga la plantilla HTML para ver todas las variables disponibles y poder editarla.
-              </p>
+
+              {/* Variables reference panel */}
+              <details className="mb-2 rounded-lg border border-indigo-100 bg-indigo-50/60">
+                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-indigo-700 select-none">
+                  📚 Variables disponibles (clic para ver)
+                </summary>
+                <div className="px-3 pb-3 pt-1">
+                  <p className="text-xs text-slate-600 mb-2">Usa <code className="bg-white border border-slate-200 rounded px-1 py-0.5 font-mono">{'{{variable}}'}</code> para insertar datos. Condicionales: <code className="bg-white border border-slate-200 rounded px-1 py-0.5 font-mono">{'{{#campo}}...{{/campo}}'}</code> (si tiene valor) y <code className="bg-white border border-slate-200 rounded px-1 py-0.5 font-mono">{'{{^campo}}...{{/campo}}'}</code> (si está vacío).</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                    {[
+                      ['{{nombre}}', 'Nombre completo'],
+                      ['{{tituloProfesional}}', 'Título / puesto'],
+                      ['{{empresa}}', 'Empresa u organización'],
+                      ['{{tagline}}', 'Frase o lema'],
+                      ['{{telefono}}', 'Teléfono (número)'],
+                      ['{{email}}', 'Correo electrónico'],
+                      ['{{website}}', 'Sitio web (texto visible)'],
+                      ['{{websiteHref}}', 'Sitio web (URL completa)'],
+                      ['{{fotoUrl}}', 'URL de la foto de perfil'],
+                      ['{{initials}}', 'Iniciales del nombre'],
+                      ['{{slug}}', 'Slug de la tarjeta'],
+                      ['{{direccion}}', 'Dirección física'],
+                      ['{{horario}}', 'Horario de atención'],
+                      ['{{googleMapsUrl}}', 'Link de Google Maps'],
+                      ['{{whatsappUrl}}', 'WhatsApp (wa.me)'],
+                      ['{{linkedinUrl}}', 'LinkedIn URL'],
+                      ['{{instagramUrl}}', 'Instagram URL'],
+                      ['{{twitterUrl}}', 'Twitter/X URL'],
+                      ['{{githubUrl}}', 'GitHub URL'],
+                      ['{{tiktokUrl}}', 'TikTok URL'],
+                      ['{{serviciosHtml}}', 'Bloque de servicios/precios'],
+                    ].map(([v, d]) => (
+                      <div key={v} className="flex items-baseline gap-1.5 py-0.5">
+                        <code className="shrink-0 font-mono bg-white border border-slate-200 rounded px-1 text-indigo-700">{v}</code>
+                        <span className="text-slate-500 truncate">{d}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500 italic">Ejemplo: <code className="font-mono bg-white border border-slate-200 rounded px-1">{'{{#fotoUrl}}<img src="{{fotoUrl}}" />{{/fotoUrl}}'}</code></p>
+                </div>
+              </details>
+
               <textarea
                 name="customHtml"
                 value={formData.customHtml}
                 onChange={handleChange}
-                rows={10}
-                className={`${inputClass} min-h-[200px] resize-y font-mono text-xs leading-relaxed`}
-                placeholder={`<!-- Haz clic en "Cargar plantilla HTML" para editar el diseño completo con variables -->\n<!-- O escribe HTML libre: <div style="text-align:center;padding:16px;"><a href="https://..." style="color:#6366f1">Ver portafolio →</a></div> -->`}
+                rows={14}
+                className={`${inputClass} min-h-[280px] resize-y font-mono text-xs leading-relaxed`}
+                placeholder={`<!-- Haz clic en "Cargar plantilla HTML" para editar el diseño completo -->\n<!-- O escribe HTML libre, por ejemplo: -->\n<div style="text-align:center;padding:16px;">\n  <p style="font-size:1.1rem;color:#6366f1;font-weight:600;">{{tagline}}</p>\n  <a href="{{whatsappUrl}}" style="background:#25d366;color:#fff;padding:8px 20px;border-radius:999px;text-decoration:none;">WhatsApp</a>\n</div>`}
                 spellCheck={false}
               />
               <div className="mt-1.5 flex items-start gap-2">

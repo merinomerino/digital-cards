@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad',
@@ -12,6 +13,7 @@ const CONTACT_EMAIL = 'privacidad@merinotechsystems.com'
 
 export default function PrivacyPage() {
   return (
+    <>
     <div className="min-h-screen bg-[#0f172a] text-white py-14 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
@@ -178,5 +180,7 @@ export default function PrivacyPage() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   )
 }
