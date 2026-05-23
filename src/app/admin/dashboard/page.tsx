@@ -8,26 +8,39 @@ import type { Card } from '@/types/card'
 export default function AdminDashboard() {
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getAllCards().then(setCards).catch(() => {}).finally(() => setLoading(false))
+    getAllCards()
+      .then(setCards)
+      .catch(() => setError('Error al cargar las tarjetas. Intenta recargar.'))
+      .finally(() => setLoading(false))
   }, [])
 
   const activeCards = cards.filter(c => c.diseño)
-  const todayViews = cards.reduce((sum, c) => sum + (c.views || 0), 0)
-  const todayClicks = cards.reduce((sum, c) => sum + (c.clicks || 0), 0)
+  const totalViews = cards.reduce((sum, c) => sum + (c.views || 0), 0)
+  const totalClicks = cards.reduce((sum, c) => sum + (c.clicks || 0), 0)
 
   const METRICS = [
-    { label: 'Tarjetas activas', value: cards.length, change: '+0', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-    { label: 'Con diseño único', value: activeCards.length, change: activeCards.length > 0 ? `+${activeCards.length}` : '0', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'Clientes', value: cards.length, change: cards.length > 0 ? `+${cards.length}` : '0', color: 'text-violet-400', bg: 'bg-violet-500/10' },
-    { label: 'Vistas hoy', value: todayViews, change: `+${todayClicks} clicks`, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { label: 'Tarjetas activas', value: cards.length, change: `${activeCards.length} con diseño`, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+    { label: 'Con diseño único', value: activeCards.length, change: activeCards.length > 0 ? `${Math.round((activeCards.length / cards.length) * 100)}%` : '0%', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { label: 'Vistas totales', value: totalViews, change: `${totalClicks} clicks en total`, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { label: 'Clientes', value: cards.length, change: 'tarjetas creadas', color: 'text-violet-400', bg: 'bg-violet-500/10' },
   ]
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-red-400 text-sm">{error}</p>
+        <button onClick={() => window.location.reload()} className="text-indigo-400 text-sm hover:underline">Reintentar</button>
       </div>
     )
   }
@@ -46,7 +59,7 @@ export default function AdminDashboard() {
           <div key={m.label} className={`${m.bg} border border-white/5 rounded-2xl p-5`}>
             <p className="text-mts-muted text-xs font-medium mb-1">{m.label}</p>
             <p className={`text-3xl font-bold ${m.color}`}>{m.value}</p>
-            <p className="text-mts-muted text-xs mt-1">{m.change} vs ayer</p>
+            <p className="text-mts-muted text-xs mt-1">{m.change}</p>
           </div>
         ))}
       </div>

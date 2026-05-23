@@ -76,14 +76,23 @@ function buildVarMap(card: Card): Record<string, string> {
   }
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 function buildServiciosHtml(card: Card): string {
   if (!card.servicios?.length) return ''
   const p = getPalette(card)
   return card.servicios
     .map(
       (s) => `<div style="padding:12px 16px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid ${p.primary}18;margin-bottom:8px;">
-  <p style="font-size:14px;font-weight:600;color:#fff;margin:0 0 4px;">${s.name}</p>
-  <p style="font-size:14px;font-weight:700;color:${p.primary};margin:0;">${s.price}</p>
+  <p style="font-size:14px;font-weight:600;color:#fff;margin:0 0 4px;">${escapeHtml(s.name)}</p>
+  <p style="font-size:14px;font-weight:700;color:${p.primary};margin:0;">${escapeHtml(s.price)}</p>
 </div>`,
     )
     .join('\n')

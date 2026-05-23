@@ -46,8 +46,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       /* Fetch rol desde Firestore */
       try {
         const userData = await getAppUser(firebaseUser.uid)
-        /* Bloquear si es cliente */
-        if (userData?.role === 'client' || userData?.active === false) {
+        /* Bloquear si no existe en Firestore, es cliente, o está inactivo */
+        if (!userData || userData.role === 'client' || userData.active === false) {
           await logoutAdmin()
           setAuthState('guest')
           router.replace('/admin/login')
@@ -55,8 +55,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
         setAppUser(userData)
       } catch {
-        /* Si no existe en Firestore pero está autenticado, permitir como root */
-        setAppUser(null)
+        /* Error de Firestore — denegar acceso por seguridad */
+        await logoutAdmin()
+        setAuthState('guest')
+        router.replace('/admin/login')
+        return
       }
 
       setCurrentUser(firebaseUser)

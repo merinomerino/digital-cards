@@ -63,7 +63,7 @@ export async function registerUser(email: string, password: string): Promise<App
   const userData: AppUser = {
     uid: cred.user.uid,
     email,
-    role: 'root',
+    role: 'admin',
     active: true,
     mustCreatePassword: false,
     createdAt: Timestamp.now().toDate().toISOString(),

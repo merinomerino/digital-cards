@@ -31,6 +31,7 @@ export default function CardPage({ params }: Props) {
       else {
         setCard(c)
         document.title = `${c.nombre} — ${c.tituloProfesional} | CardLink`
+        trackCardView(slug, c.nombre)
       }
     }).catch(err => {
       if (slugRef.current !== slug) return
@@ -39,8 +40,6 @@ export default function CardPage({ params }: Props) {
     }).finally(() => {
       if (slugRef.current === slug) setLoading(false)
     })
-    // Track view
-    trackCardView(slug, slug)
   }, [slug])
 
   if (loading) {
@@ -146,25 +145,27 @@ export default function CardPage({ params }: Props) {
         />
         <DesignCardPreview card={card} />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <QRCodeDisplay url={cardUrl} slug={slug} />
-          <div className="flex flex-col gap-3">
-            <AdBanner
-              slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM || 'SLOT_BOTTOM'}
-              format="rectangle"
-              className="rounded-xl overflow-hidden flex-1"
-            />
-            <Link
-              href={`/${slug}/edit`}
-              className="flex items-center justify-center gap-2 bg-mts-surface/60 border border-mts-border/50 rounded-2xl p-4 text-mts-muted hover:text-white hover:border-mts-muted transition-colors text-sm font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Editar
-            </Link>
-          </div>
+          <AdBanner
+            slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_BOTTOM || 'SLOT_BOTTOM'}
+            format="rectangle"
+            className="rounded-xl overflow-hidden"
+          />
+        </div>
+
+        {/* Link de edición discreto al fondo */}
+        <div className="pt-2 text-center">
+          <Link
+            href={`/${slug}/edit`}
+            className="inline-flex items-center gap-1.5 text-xs text-mts-muted/60 hover:text-mts-muted transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            ¿Es tu tarjeta? Edítala aquí
+          </Link>
         </div>
       </div>
 

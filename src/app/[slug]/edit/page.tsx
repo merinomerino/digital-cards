@@ -19,12 +19,16 @@ export default function EditPage({ params }: Props) {
   const [card, setCard] = useState<Card | null>(null)
   const [pinVerified, setPinVerified] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getCardBySlug(slug).then(c => {
-      if (!c) router.replace('/')
-      else { setCard(c); setLoading(false) }
-    })
+    getCardBySlug(slug)
+      .then(c => {
+        if (!c) router.replace('/')
+        else setCard(c)
+      })
+      .catch(() => setError('No se pudo cargar la tarjeta. Verifica tu conexión.'))
+      .finally(() => setLoading(false))
   }, [slug, router])
 
   const handleUpdate = async (data: CardFormData) => {
@@ -68,6 +72,18 @@ export default function EditPage({ params }: Props) {
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <p className="text-white font-semibold">No se pudo cargar la tarjeta</p>
+          <p className="text-slate-400 text-sm">{error}</p>
+          <button onClick={() => router.back()} className="text-indigo-400 text-sm hover:underline">← Volver</button>
+        </div>
       </div>
     )
   }

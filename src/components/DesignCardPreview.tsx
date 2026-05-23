@@ -2,10 +2,38 @@
 
 import Image from 'next/image'
 import type { CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardCustomColors, SocialNetwork } from '@/types/card'
 import { getSocialUrl, getWhatsAppUrl } from '@/lib/utils'
 import { getTemplate } from '@/lib/templates/registry'
 import { isTemplateHtml, renderTemplateVars } from '@/lib/templateHtml'
+
+// Sanitize HTML client-side only (DOMPurify needs window)
+function sanitizeHtml(html: string): string {
+  if (typeof window === 'undefined') return ''
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const DOMPurify = require('dompurify')
+  return DOMPurify.sanitize(html, {
+    ADD_TAGS: ['style'],
+    ADD_ATTR: ['target', 'rel'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+  })
+}
+
+// Scope CSS to a card slug class to prevent style leakage
+function scopeCss(css: string, slugClass: string): string {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, '') // remove comments
+    .split('}')
+    .filter(rule => rule.trim())
+    .map(rule => {
+      const [sel, ...rest] = rule.split('{')
+      if (!sel || !rest.length) return rule + '}'
+      const scoped = sel.trim().split(',').map(s => `.${slugClass} ${s.trim()}`).join(', ')
+      return `${scoped} { ${rest.join('{')} }`
+    })
+    .join('\n')
+}
 
 interface Props {
   card: Card
@@ -453,14 +481,34 @@ export default function DesignCardPreview({ card }: Props) {
   const animClass = ANIMATION_CLASSES[card.animation || 'none'] || ''
   const slugClass = `card-${card.slug.replace(/[^a-z0-9]/g, '-')}`
 
+  // Scoped CSS (sanitized + namespaced to this card)
+  const [safeCss, setSafeCss] = useState<string | null>(null)
+  const [safeHtml, setSafeHtml] = useState<string | null>(null)
+  useEffect(() => {
+    if (card.customCss) {
+      const scoped = scopeCss(card.customCss, slugClass)
+      setSafeCss(sanitizeHtml(`<style>${scoped}</style>`))
+    } else {
+      setSafeCss(null)
+    }
+  }, [card.customCss, slugClass])
+
   // ── Modo plantilla HTML ({{variable}} en customHtml) ──────────────────────
-  if (card.customHtml && isTemplateHtml(card.customHtml)) {
-    const rendered = renderTemplateVars(card.customHtml, card)
+  const isTemplate = card.customHtml && isTemplateHtml(card.customHtml)
+  useEffect(() => {
+    if (card.customHtml) {
+      const rendered = isTemplate ? renderTemplateVars(card.customHtml, card) : card.customHtml
+      setSafeHtml(sanitizeHtml(rendered))
+    } else {
+      setSafeHtml(null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card.customHtml, isTemplate])
+
+  if (isTemplate) {
     return (
       <div className={`${slugClass} ${animClass}`.trim()}>
-        {card.customCss && (
-          <style dangerouslySetInnerHTML={{ __html: card.customCss }} />
-        )}
+        {safeCss && <div dangerouslySetInnerHTML={{ __html: safeCss }} />}
         {card.headerBanner && (
           <div className="mb-4 overflow-hidden rounded-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -473,7 +521,7 @@ export default function DesignCardPreview({ card }: Props) {
             <img src={card.logoUrl} alt={card.nombre} className="max-h-14 max-w-[180px] object-contain drop-shadow-lg" />
           </div>
         )}
-        <div dangerouslySetInnerHTML={{ __html: rendered }} />
+        {safeHtml !== null && <div dangerouslySetInnerHTML={{ __html: safeHtml }} />}
       </div>
     )
   }
@@ -490,9 +538,7 @@ export default function DesignCardPreview({ card }: Props) {
 
   return (
     <div className={`${slugClass} ${animClass}`.trim()}>
-      {card.customCss && (
-        <style dangerouslySetInnerHTML={{ __html: card.customCss }} />
-      )}
+      {safeCss && <div dangerouslySetInnerHTML={{ __html: safeCss }} />}
 
       {card.headerBanner && (
         <div className="mb-4 overflow-hidden rounded-2xl">
@@ -510,11 +556,8 @@ export default function DesignCardPreview({ card }: Props) {
 
       {cardComponent}
 
-      {card.customHtml && !isTemplateHtml(card.customHtml) && (
-        <div
-          className="mt-4"
-          dangerouslySetInnerHTML={{ __html: card.customHtml }}
-        />
+      {safeHtml && !isTemplate && (
+        <div className="mt-4" dangerouslySetInnerHTML={{ __html: safeHtml }} />
       )}
     </div>
   )

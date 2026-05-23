@@ -320,7 +320,7 @@ export default function HomePage() {
       </section>
 
       {/* ───── Contacto ───── */}
-      <section className="max-w-3xl mx-auto px-4 pb-20 text-center">
+      <section id="crear" className="max-w-3xl mx-auto px-4 pb-20 text-center">
         <div className="glass rounded-2xl p-8 md:p-12 border border-indigo-500/10">
           <h2 className="text-2xl font-bold text-white mb-3">¿Listo para tu tarjeta digital personalizada?</h2>
           <p className="text-mts-muted mb-8 max-w-lg mx-auto">
