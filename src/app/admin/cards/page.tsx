@@ -1,11 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { getAllCards, deleteCard } from '@/lib/firestore'
+import { getCardsPaginated, deleteCard, type CardsPage } from '@/lib/firestore'
 import type { Card } from '@/types/card'
+import type { QueryDocumentSnapshot } from 'firebase/firestore'
 
 function getDesignBadge(design?: string) {
   const normalized = (design || 'clasico').toLowerCase()
@@ -25,18 +26,34 @@ function getDesignBadge(design?: string) {
 export default function AdminCards() {
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [cardToDelete, setCardToDelete] = useState<Card | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const cursorRef = useRef<QueryDocumentSnapshot | null>(null)
+
+  const loadPage = useCallback(async (append = false) => {
+    try {
+      const page: CardsPage = await getCardsPaginated(20, append ? cursorRef.current : null)
+      cursorRef.current = page.cursor
+      setHasMore(page.hasMore)
+      setCards(prev => append ? [...prev, ...page.cards] : page.cards)
+    } catch {
+      toast.error('Error al cargar tarjetas')
+    } finally {
+      setLoading(false)
+      setLoadingMore(false)
+    }
+  }, [])
 
   useEffect(() => {
-    getAllCards().then(setCards).catch(() => toast.error('Error al cargar tarjetas')).finally(() => setLoading(false))
-
+    loadPage()
     const flash = window.sessionStorage.getItem('cardlink-admin-flash')
     if (flash) {
       toast.success(flash)
       window.sessionStorage.removeItem('cardlink-admin-flash')
     }
-  }, [])
+  }, [loadPage])
 
   const confirmDelete = async () => {
     if (!cardToDelete) return
@@ -89,7 +106,8 @@ export default function AdminCards() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[28px] border border-white/5 bg-[#13131A]">
+          <>
+            <div className="overflow-hidden rounded-[28px] border border-white/5 bg-[#13131A]">
             <div className="hidden grid-cols-[minmax(0,2fr)_120px_160px_220px] gap-4 border-b border-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-mts-muted md:grid">
               <span>Tarjeta</span>
               <span>Diseño</span>
@@ -144,7 +162,20 @@ export default function AdminCards() {
                 )
               })}
             </div>
-          </div>
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center pt-2">
+                <button
+                  disabled={loadingMore}
+                  onClick={() => { setLoadingMore(true); loadPage(true) }}
+                  className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+                >
+                  {loadingMore ? 'Cargando...' : 'Cargar más tarjetas'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

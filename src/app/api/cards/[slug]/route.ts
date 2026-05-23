@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCardBySlug } from '@/lib/firestore'
 import { hashPin } from '@/lib/utils'
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params
+  try {
+    const card = await getCardBySlug(slug)
+    if (!card) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    // Strip sensitive fields before returning
+    const { pinHash: _pin, ...publicCard } = card
+    return NextResponse.json(publicCard)
+  } catch {
+    return NextResponse.json({ error: 'Error al cargar la tarjeta' }, { status: 500 })
+  }
+}
+
 // Simple in-memory rate limiter: max 5 attempts per IP per slug per 5 min
 const attempts = new Map<string, { count: number; resetAt: number }>()
 const MAX_ATTEMPTS = 5

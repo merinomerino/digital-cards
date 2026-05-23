@@ -9,7 +9,11 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
+  limit,
+  startAfter,
   Timestamp,
+  type QueryDocumentSnapshot,
 } from 'firebase/firestore'
 import { Card } from '@/types/card'
 
@@ -149,6 +153,46 @@ export async function getAllCards(): Promise<Card[]> {
         updatedAt: (data.updatedAt as Timestamp).toDate(),
       } as Card
     })
+  } catch (err) {
+    const errorType = findErrorType(err)
+    if (errorType === 'conexion') {
+      throw new DatabaseError('No se pudo conectar a la base de datos. Verifica tu conexión.')
+    }
+    throw err
+  }
+}
+
+export interface CardsPage {
+  cards: Card[]
+  cursor: QueryDocumentSnapshot | null
+  hasMore: boolean
+}
+
+export async function getCardsPaginated(
+  pageSize = 20,
+  cursor?: QueryDocumentSnapshot | null
+): Promise<CardsPage> {
+  checkAvailable()
+  try {
+    const base = query(
+      collection(db!, COLLECTION),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize + 1),
+      ...(cursor ? [startAfter(cursor)] : [])
+    )
+    const snapshot = await getDocs(base)
+    const hasMore = snapshot.docs.length > pageSize
+    const docs = hasMore ? snapshot.docs.slice(0, pageSize) : snapshot.docs
+    const cards = docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        ...data,
+        createdAt: (data.createdAt as Timestamp).toDate(),
+        updatedAt: (data.updatedAt as Timestamp).toDate(),
+      } as Card
+    })
+    return { cards, cursor: docs[docs.length - 1] ?? null, hasMore }
   } catch (err) {
     const errorType = findErrorType(err)
     if (errorType === 'conexion') {
