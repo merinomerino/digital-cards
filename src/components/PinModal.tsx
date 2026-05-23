@@ -62,9 +62,10 @@ export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className={`bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full mx-4 ${shake ? 'animate-shake' : 'animate-scale-in'}`}>
-        <h2 className="text-xl font-semibold text-center mb-2">Ingresa tu PIN</h2>
-        <p className="text-gray-500 text-center mb-6">Ingresa el PIN de 4 dígitos</p>
+      <div className={`mx-4 w-full max-w-sm rounded-2xl border border-white/10 bg-[#13131A] p-8 shadow-2xl shadow-black/40 ${shake ? 'animate-shake' : 'animate-scale-in'}`}>
+        <h2 className="mb-2 text-center text-xl font-semibold text-white">Ingresa tu PIN</h2>
+        <p className="mb-2 text-center text-slate-400">Ingresa el PIN de 4 dígitos para editar tu tarjeta</p>
+        <p className="mb-6 text-center text-xs uppercase tracking-[0.24em] text-slate-500">/{cardId}</p>
 
         <div className="flex justify-center gap-3 mb-6">
           {digits.map((digit, index) => (
@@ -73,16 +74,16 @@ export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) 
               type="text" inputMode="numeric" maxLength={1} value={digit}
               onChange={e => handleChange(index, e.target.value)}
               onKeyDown={e => handleKeyDown(index, e)} disabled={loading}
-              className={`w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none focus:border-mts-primary transition-colors ${error ? 'border-red-500' : 'border-gray-300'} ${loading ? 'opacity-50' : ''}`}
+              className={`h-14 w-14 rounded-xl border-2 bg-white/5 text-center text-2xl font-bold text-white transition-colors focus:border-mts-primary ${error ? 'border-red-500' : 'border-white/10'} ${loading ? 'opacity-50' : ''}`}
             />
           ))}
         </div>
 
-        {error && <p className="text-red-500 text-center text-sm mb-4">PIN incorrecto</p>}
+        {error && <p className="mb-4 text-center text-sm text-red-400">PIN incorrecto</p>}
 
         <div className="flex justify-center">
           <button onClick={onClose} disabled={loading}
-            className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50">
+            className="px-6 py-2 text-slate-400 transition-colors hover:text-white disabled:opacity-50">
             Cancelar
           </button>
         </div>
