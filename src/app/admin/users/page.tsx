@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
+import toast, { Toaster } from 'react-hot-toast'
 import { db } from '@/lib/firebase'
 import { getUserCards, type AppUser, type UserRole } from '@/lib/auth'
 
@@ -62,8 +63,9 @@ export default function AdminUsers() {
     try {
       await updateDoc(doc(db, 'users', user.uid), { active: !user.active })
       setUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, active: !u.active } : u))
+      toast.success(`Usuario ${!user.active ? 'activado' : 'desactivado'}.`)
     } catch {
-      // ignore
+      toast.error('No se pudo cambiar el estado. Los cambios de usuarios requieren permisos de administrador.')
     } finally {
       setUpdating(null)
     }
@@ -75,8 +77,9 @@ export default function AdminUsers() {
     try {
       await updateDoc(doc(db, 'users', user.uid), { role: newRole })
       setUsers(prev => prev.map(u => u.uid === user.uid ? { ...u, role: newRole } : u))
+      toast.success(`Rol actualizado a ${newRole}.`)
     } catch {
-      // ignore
+      toast.error('No se pudo cambiar el rol. Los cambios de rol requieren permisos de administrador servidor.')
     } finally {
       setUpdating(null)
     }
@@ -104,6 +107,7 @@ export default function AdminUsers() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      <Toaster position="top-center" toastOptions={{ style: { background: '#13131A', color: '#F1F5F9', border: '1px solid #1E293B', borderRadius: '14px' } }} />
       {/* Header */}
       <div className="flex flex-col gap-4 rounded-[28px] border border-white/5 bg-[#13131A] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>

@@ -10,6 +10,7 @@ import type { User as FirebaseUser } from 'firebase/auth'
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: '◻' },
   { label: 'Tarjetas', href: '/admin/cards', icon: '⊞' },
+  { label: 'Templates', href: '/admin/templates', icon: '◫' },
   { label: 'Usuarios', href: '/admin/users', icon: '◉' },
   { label: 'Analytics', href: '/admin/analytics', icon: '◈' },
   { label: 'Editor', href: '/admin/editor', icon: '✎' },

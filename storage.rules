@@ -1,18 +1,23 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Fotos de perfil de tarjetas
     match /cards/{slug}/profile.{ext} {
-      // Lectura pública (la URL ya es pública, pero permitimos acceso directo)
+      // Lectura pública (las URLs son públicas en la app)
       allow read: if true;
 
-      // Escritura: solo archivos de imagen, máx 5 MB
-      allow write: if request.resource != null
+      // Escritura: solo usuarios autenticados, archivos de imagen, máx 5 MB
+      allow write: if request.auth != null
+        && request.resource != null
         && request.resource.size <= 5 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp|heic)');
 
-      // Eliminación: permitida (el dueño usa su PIN para validar antes en la app)
-      allow delete: if true;
+      // Eliminar: solo el usuario autenticado (propietario de sesión activa)
+      allow delete: if request.auth != null;
+    }
+
+    // Bloquear cualquier otra ruta de Storage
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

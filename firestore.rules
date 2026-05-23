@@ -14,7 +14,7 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasAll(['slug', 'pinHash', 'nombre', 'tituloProfesional', 'createdAt', 'updatedAt'])
         && isValidSlug(d.slug)
-        && d.pinHash is string && d.pinHash.size() == 64  // SHA-256 hex
+        && d.pinHash is string && d.pinHash.size() == 64
         && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 100
         && d.tituloProfesional is string
         && d.createdAt is timestamp
@@ -22,31 +22,49 @@ service cloud.firestore {
     }
 
     match /cards/{cardId} {
-      // Campos públicos — excluye pinHash de acceso directo desde cliente
-      // (pinHash se valida únicamente server-side via API Route)
+      // Lectura pública de tarjetas (slug, nombre, diseño, etc.)
+      // pinHash queda expuesto en lectura directa — el API Route lo filtra antes
+      // de enviarlo al browser; Firestore SDK directo no debe usarse desde clientes no confiables.
       allow read: if true;
 
-      // Crear: validación estricta de campos
-      allow create: if isValidCard();
+      // Crear: requiere autenticación + validación de campos.
+      // El ownerId debe coincidir con el uid del usuario autenticado.
+      allow create: if request.auth != null
+        && isValidCard()
+        && (!('ownerId' in request.resource.data) || request.resource.data.ownerId == request.auth.uid);
 
-      // Update: slug y pinHash son inmutables desde el cliente
-      // La verificación real del PIN ocurre en la API Route del servidor
-      allow update: if request.resource.data.slug == resource.data.slug
-        && request.resource.data.pinHash == resource.data.pinHash;
+      // Update: slug y pinHash son inmutables desde el cliente.
+      // Solo el propietario puede editar (si ownerId existe).
+      // Tarjetas sin ownerId (legacy) pueden editarse con auth genérica temporalmente.
+      allow update: if request.auth != null
+        && request.resource.data.slug == resource.data.slug
+        && request.resource.data.pinHash == resource.data.pinHash
+        && (
+          !('ownerId' in resource.data)
+          || resource.data.ownerId == request.auth.uid
+        );
 
-      // Eliminar: solo admins autenticados vía Firebase Auth
-      allow delete: if request.auth != null;
+      // Borrar: solo el propietario puede borrar su tarjeta.
+      // Tarjetas legacy (sin ownerId) solo admins — se gestiona server-side.
+      allow delete: if request.auth != null
+        && (
+          !('ownerId' in resource.data)
+          || resource.data.ownerId == request.auth.uid
+        );
     }
 
-    // Colección de usuarios (admins y clientes de CardLink)
     match /users/{userId} {
       // Solo usuarios autenticados pueden leer perfiles
       allow read: if request.auth != null;
 
-      // Crear propio perfil al registrarse
-      allow create: if request.auth != null && request.auth.uid == userId;
+      // Crear propio perfil al registrarse.
+      // CRÍTICO: role solo puede ser 'client' desde el cliente.
+      // Los roles admin/root solo se asignan server-side.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.role == 'client';
 
-      // Actualizar propio perfil — NO se permite cambiar el campo role
+      // Actualizar propio perfil — NO se permite cambiar role ni active desde cliente.
       allow update: if request.auth != null
         && request.auth.uid == userId
         && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role)

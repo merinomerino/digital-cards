@@ -11,7 +11,7 @@ type Props = {
 
 export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) {
   const [digits, setDigits] = useState<string[]>(['', '', '', ''])
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [shake, setShake] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -27,7 +27,7 @@ export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) 
     const newDigits = [...digits]
     newDigits[index] = value.slice(-1)
     setDigits(newDigits)
-    setError(false)
+    setError(null)
     if (value && index < 3) inputRefs.current[index + 1]?.focus()
     if (newDigits.every(d => d !== '') && index === 3) verifyPin(newDigits.join(''))
   }
@@ -47,14 +47,22 @@ export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) 
       })
       if (res.ok) {
         onSuccess()
-      } else if (res.status === 401) {
-        setError(true)
+      } else if (res.status === 429) {
+        setError('Demasiados intentos. Espera un momento.')
         setShake(true)
         setTimeout(() => setShake(false), 500)
         setDigits(['', '', '', ''])
         inputRefs.current[0]?.focus()
+      } else if (res.status === 401) {
+        setError('PIN incorrecto')
+        setShake(true)
+        setTimeout(() => setShake(false), 500)
+        setDigits(['', '', '', ''])
+        inputRefs.current[0]?.focus()
+      } else {
+        setError('Error del servidor. Inténtalo de nuevo.')
       }
-    } catch { setError(true) }
+    } catch { setError('Error de conexión. Inténtalo de nuevo.') }
     finally { setLoading(false) }
   }
 
@@ -79,7 +87,7 @@ export default function PinModal({ isOpen, onClose, onSuccess, cardId }: Props) 
           ))}
         </div>
 
-        {error && <p className="mb-4 text-center text-sm text-red-400">PIN incorrecto</p>}
+        {error && <p className="mb-4 text-center text-sm text-red-400">{error}</p>}
 
         <div className="flex justify-center">
           <button onClick={onClose} disabled={loading}

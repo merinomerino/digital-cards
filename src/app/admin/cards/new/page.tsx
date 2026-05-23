@@ -8,6 +8,7 @@ import CardEditorWithPreview from '@/components/CardEditorWithPreview'
 import { CardFormData } from '@/components/CardForm'
 import { createCard, DatabaseError } from '@/lib/firestore'
 import { hashPin } from '@/lib/utils'
+import { auth } from '@/lib/firebase'
 import type { CardDesign } from '@/types/card'
 
 const VALID_DESIGNS: CardDesign[] = ['clasico', 'tattoo', 'vet', 'travel']
@@ -22,6 +23,7 @@ function NewCardInner() {
 
   const handleSubmit = async (data: CardFormData) => {
     try {
+      const ownerId = auth?.currentUser?.uid
       await createCard({
         slug: data.slug,
         pinHash: hashPin(data.pin),
@@ -49,6 +51,7 @@ function NewCardInner() {
         direccion: data.direccion,
         googleMapsUrl: data.googleMapsUrl,
         redesSociales: data.redesSociales,
+        ...(ownerId ? { ownerId } : {}),
       })
       window.sessionStorage.setItem('cardlink-admin-flash', `Tarjeta /${data.slug} creada correctamente.`)
       router.push('/admin/cards')
