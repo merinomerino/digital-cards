@@ -1,15 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import CardEditorWithPreview from '@/components/CardEditorWithPreview'
 import { CardFormData } from '@/components/CardForm'
 import { createCard, DatabaseError } from '@/lib/firestore'
 import { hashPin } from '@/lib/utils'
+import type { CardDesign } from '@/types/card'
 
-export default function AdminNewCardPage() {
+const VALID_DESIGNS: CardDesign[] = ['clasico', 'tattoo', 'vet', 'travel']
+
+function NewCardInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const templateParam = searchParams.get('template') as CardDesign | null
+  const initialDesign: CardDesign = VALID_DESIGNS.includes(templateParam as CardDesign)
+    ? (templateParam as CardDesign)
+    : 'clasico'
 
   const handleSubmit = async (data: CardFormData) => {
     try {
@@ -41,7 +50,6 @@ export default function AdminNewCardPage() {
         googleMapsUrl: data.googleMapsUrl,
         redesSociales: data.redesSociales,
       })
-
       window.sessionStorage.setItem('cardlink-admin-flash', `Tarjeta /${data.slug} creada correctamente.`)
       router.push('/admin/cards')
     } catch (error) {
@@ -50,6 +58,10 @@ export default function AdminNewCardPage() {
     }
   }
 
+  return <CardEditorWithPreview initialData={{ diseño: initialDesign } as never} onSubmit={handleSubmit} />
+}
+
+export default function AdminNewCardPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <Toaster
@@ -75,9 +87,10 @@ export default function AdminNewCardPage() {
       </div>
 
       <div className="rounded-[28px] border border-white/5 bg-white p-6 shadow-2xl sm:p-8">
-        <CardEditorWithPreview onSubmit={handleSubmit} />
+        <Suspense fallback={<div className="flex h-32 items-center justify-center"><div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" /></div>}>
+          <NewCardInner />
+        </Suspense>
       </div>
     </div>
   )
 }
-

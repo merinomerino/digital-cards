@@ -1,37 +1,74 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { TEMPLATES } from '@/lib/templates/registry'
 
 export default function AdminTemplates() {
+  const router = useRouter()
   const freeTemplates = TEMPLATES.filter(t => !t.premium)
   const premiumTemplates = TEMPLATES.filter(t => t.premium)
 
+  function applyTemplate(variant: string) {
+    router.push(`/admin/cards/new?template=${variant}`)
+  }
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Templates</h1>
-        <p className="text-mts-muted text-sm mt-1">{TEMPLATES.length} plantillas disponibles</p>
+    <div className="mx-auto max-w-5xl space-y-8">
+      <div className="flex flex-col gap-4 rounded-[28px] border border-white/5 bg-[#13131A] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Templates</h1>
+          <p className="mt-1 text-sm text-mts-muted">
+            {TEMPLATES.length} plantillas · Elige una y crea tu tarjeta en segundos
+          </p>
+        </div>
       </div>
 
       {/* Free templates */}
       <div>
-        <h2 className="text-white font-semibold text-sm mb-4">Gratuitas</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h2 className="mb-4 text-sm font-semibold text-white">Gratuitas</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {freeTemplates.map(t => (
-            <div key={t.id} className="bg-[#13131a] border border-white/5 rounded-2xl overflow-hidden group hover:border-indigo-500/30 transition-colors">
-              <div className="h-32 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${t.colors.bg}, ${t.colors.primary}22)` }}>
-                <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center text-2xl" style={{ borderColor: t.colors.primary, color: t.colors.primary }}>
+            <div
+              key={t.id}
+              className="group overflow-hidden rounded-[24px] border border-white/5 bg-[#13131a] transition-all hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5"
+            >
+              {/* Preview */}
+              <div
+                className="relative flex h-36 items-center justify-center"
+                style={{ background: `linear-gradient(135deg, ${t.colors.bg}, ${t.colors.primary}22)` }}
+              >
+                <div
+                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 text-2xl"
+                  style={{ borderColor: t.colors.primary, color: t.colors.primary }}
+                >
                   {t.variant === 'tattoo' ? '⚡' : t.variant === 'vet' ? '🐾' : t.variant === 'travel' ? '✈️' : '◆'}
                 </div>
-              </div>
-              <div className="p-4">
-                <h3 className="text-white font-semibold text-sm">{t.name}</h3>
-                <p className="text-mts-muted text-xs mt-1 leading-relaxed">{t.description}</p>
-                <div className="flex items-center gap-1.5 mt-3">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: t.colors.primary }} />
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: t.colors.secondary }} />
-                  <span className="text-[10px] text-mts-muted ml-auto">{t.variant}</span>
+                {/* Hover overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={() => applyTemplate(t.variant)}
+                    className="rounded-xl bg-white px-4 py-2 text-xs font-semibold text-slate-900 shadow-lg transition hover:bg-slate-100"
+                  >
+                    Usar template →
+                  </button>
                 </div>
+              </div>
+
+              <div className="p-4">
+                <h3 className="text-sm font-semibold text-white">{t.name}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-mts-muted">{t.description}</p>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: t.colors.primary }} />
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: t.colors.secondary }} />
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: t.colors.accent }} />
+                  <span className="ml-auto text-[10px] text-mts-muted">{t.variant}</span>
+                </div>
+                <button
+                  onClick={() => applyTemplate(t.variant)}
+                  className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-medium text-slate-200 transition hover:border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-300"
+                >
+                  Usar template
+                </button>
               </div>
             </div>
           ))}
@@ -39,26 +76,41 @@ export default function AdminTemplates() {
       </div>
 
       {/* Premium templates */}
-      <div>
-        <h2 className="text-white font-semibold text-sm mb-4">Premium ✦</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {premiumTemplates.map(t => (
-            <div key={t.id} className="bg-[#13131a] border border-amber-500/20 rounded-2xl overflow-hidden group hover:border-amber-500/40 transition-colors relative">
-              <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 text-[10px] font-medium px-2 py-0.5 rounded-full">Premium</div>
-              <div className="h-32 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${t.colors.bg}, ${t.colors.primary}22)` }}>
-                <div className="w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center text-2xl opacity-60" style={{ borderColor: t.colors.primary, color: t.colors.primary }}>
-                  ✦
+      {premiumTemplates.length > 0 && (
+        <div>
+          <h2 className="mb-4 text-sm font-semibold text-white">Premium ✦</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {premiumTemplates.map(t => (
+              <div
+                key={t.id}
+                className="relative overflow-hidden rounded-[24px] border border-amber-500/20 bg-[#13131a] transition-all hover:border-amber-500/40"
+              >
+                <div className="absolute right-3 top-3 z-10 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+                  Premium
+                </div>
+                <div
+                  className="flex h-36 items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${t.colors.bg}, ${t.colors.primary}22)` }}
+                >
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed text-2xl opacity-60"
+                    style={{ borderColor: t.colors.primary, color: t.colors.primary }}
+                  >
+                    ✦
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-semibold text-white">{t.name}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-mts-muted">{t.description}</p>
+                  <div className="mt-3 rounded-xl border border-amber-500/10 bg-amber-500/5 py-2 text-center text-xs font-medium text-amber-400/70">
+                    Próximamente
+                  </div>
                 </div>
               </div>
-              <div className="p-4">
-                <h3 className="text-white font-semibold text-sm">{t.name}</h3>
-                <p className="text-mts-muted text-xs mt-1 leading-relaxed">{t.description}</p>
-                <p className="text-amber-400 text-xs font-medium mt-3">Próximamente</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
