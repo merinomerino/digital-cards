@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createCard, DatabaseError } from '@/lib/firestore'
 import { hashPin } from '@/lib/utils'
-import { checkAdminAuth, clearAdminToken, getAdminToken } from '@/lib/adminAuth'
+import { onAdminAuth, getAppUser } from '@/lib/auth'
 import type { Card } from '@/types/card'
 
 type SeedCard = Omit<Card, 'id' | 'pinHash' | 'createdAt' | 'updatedAt'> & { pin: string }
@@ -137,38 +137,24 @@ export default function SeedPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const verifyAdmin = async () => {
-      if (!checkAdminAuth()) {
+    const unsubscribe = onAdminAuth(async (firebaseUser) => {
+      if (!firebaseUser) {
         router.replace('/admin/login')
         return
       }
-
-      const token = getAdminToken()
-      if (!token) {
-        router.replace('/admin/login')
-        return
-      }
-
       try {
-        const response = await fetch('/api/admin/auth', {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: 'no-store',
-        })
-
-        if (!response.ok) {
-          clearAdminToken()
+        const userData = await getAppUser(firebaseUser.uid)
+        if (!userData || userData.role === 'client' || userData.active === false) {
           router.replace('/admin/login')
           return
         }
-
-        setAuthChecking(false)
       } catch {
-        clearAdminToken()
         router.replace('/admin/login')
+        return
       }
-    }
-
-    void verifyAdmin()
+      setAuthChecking(false)
+    })
+    return unsubscribe
   }, [router])
 
   const handleSeed = async () => {
